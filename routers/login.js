@@ -23,6 +23,7 @@ route.post('/', (req,res) => {
                 if(userDocData.email === dataLogin.email && bcrypt.compareSync(dataLogin.password, userDocData.password)){
                     success = success + 1;
                     dataUserLogin = {
+                        id: userDoc.id,
                         firstName: userDocData.firstName,
                         lastName: userDocData.lastName
                     }
