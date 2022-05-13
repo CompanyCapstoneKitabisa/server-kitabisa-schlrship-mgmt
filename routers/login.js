@@ -28,16 +28,16 @@ route.post('/', (req,res) => {
                     }
                 }
             })
-            // if(success === 1){
-            //     res.status(200).send({
-            //         message: 'Berhasil login',
-            //         dataUserLogin
-            //     })
-            // }else if(success === 0){
-            //     res.status(404).send({
-            //         message: 'Gagal login'
-            //     })
-            // }
+            if(success === 1){
+                res.status(200).send({
+                    message: 'Berhasil login',
+                    dataUserLogin
+                })
+            }else if(success === 0){
+                res.status(404).send({
+                    message: 'Gagal login'
+                })
+            }
         })
     } catch (e) {
         res.status(500).send({message: 'Internal server error'})
