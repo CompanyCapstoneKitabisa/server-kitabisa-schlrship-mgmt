@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const userRoute = require('./routers/users.js');
 const loginRoute = require('./routers/login.js');
+const testRoute = require('./routers/test.js');
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -14,6 +15,7 @@ app.get('/', (req,res) => {res.send({message: "Hello world!"})})
 
 // app.use('/users', userRoute);
 // app.use('/login', loginRoute);
+app.use('/test', loginRoute);
 
 
 const server = app.listen(port, () => {
