@@ -44,4 +44,8 @@ route.post('/', (req,res) => {
     }
 })
 
+route.get('/', (req,res) => {
+    res.send({message: 'hallo'})
+})
+
 module.exports = route
