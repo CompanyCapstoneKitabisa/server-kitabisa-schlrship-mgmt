@@ -4,7 +4,6 @@
 /node_modules
 /.pnp
 .pnp.js
-/key
 
 # testing
 /coverage
@@ -25,4 +24,3 @@ yarn-error.log*
 
 #no modules
 node_modules
-key
