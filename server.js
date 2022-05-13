@@ -15,7 +15,7 @@ app.get('/', (req,res) => {res.send({message: "Hello world!"})})
 
 // app.use('/users', userRoute);
 // app.use('/login', loginRoute);
-app.use('/test', loginRoute);
+app.use('/test', testRoute);
 
 
 const server = app.listen(port, () => {
