@@ -12,7 +12,7 @@ app.use(express.json());
 
 app.get('/', (req,res) => {res.send({message: "Hello world!"})})
 
-app.use('/users', userRoute);
+// app.use('/users', userRoute);
 app.use('/login', loginRoute);
 
 
