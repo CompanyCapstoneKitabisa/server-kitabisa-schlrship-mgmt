@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const dotenv = require('dotenv');
 
 const userRoute = require('./routers/users.js');
 const loginRoute = require('./routers/login.js');
 const testRoute = require('./routers/test.js');
 
 const app = express();
+require('dotenv').config();
 const port = process.env.PORT || 8080;
 
 app.use(cors());
