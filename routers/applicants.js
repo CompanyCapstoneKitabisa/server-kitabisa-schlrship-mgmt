@@ -11,13 +11,14 @@ route.get('/', (req,res) => {
     const id = req.query.id;
     var applicantsRef = db.collection('applicants');
     var success = 0;
+    let fetchedData = {};
 
     applicantsRef.get().then((data) => {
         data.forEach((applicantsData) => {
             if(id === applicantsData.id){
                 success = 1;
                 var applicantsDataDetail = applicantsData.data();
-                var fetchedData = {
+                fetchedData = {
                     id: id,
                     name: applicantsDataDetail.name,
                     photoUrl: applicantsDataDetail.photoUrl,
@@ -45,23 +46,24 @@ route.get('/', (req,res) => {
                 }
             }
 
-            if(success === 1){
-                res.status(200).send({
-                    error: false,
-                    message: "Data successfully fetched",
-                    fetchedData
-                })
-            } else if(success === 0){
-                res.status(200).send({
-                    error: false,
-                    message: "Data not found"
-                })
-            }
         })
+        if(success === 1){
+            res.status(200).send({
+                error: false,
+                message: "Data successfully fetched",
+                fetchedData
+            })
+        } else if(success === 0){
+            res.status(200).send({
+                error: false,
+                message: "Data not found"
+            })
+        }
     })
 
 })
 
+//Search applicant by name
 route.get('/search', (req,res) => {
     const applicantsRef = db.collection('applicants')
 
@@ -109,6 +111,7 @@ route.get('/search', (req,res) => {
 
 })
 
+//update specific applicant status
 route.post('/:id', (req,res) => {
     const id = req.params.id
     const statusUpdate = req.body.status
