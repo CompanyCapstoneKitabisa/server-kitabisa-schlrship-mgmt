@@ -112,7 +112,7 @@ route.get('/search', (req,res) => {
 })
 
 //update specific applicant status
-route.post('/:id', (req,res) => {
+route.post('/:id/update', (req,res) => {
     const id = req.params.id
     const statusUpdate = req.body.status
     const lower_statusUpdate = statusUpdate.toLowerCase()
