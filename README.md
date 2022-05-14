@@ -6,7 +6,7 @@
 2. [Login](#login)
 3. [Users](#users)
     1. [Adding new user](#adding-new-user)
-    2. [Get specific user](#get-specific-user)
+    2. [Get specific user](#getting-specific-user)
 4. [Campaigns](#campaigns)
     1. [Get all available campaigns](#get-all-available-campaigns)
     2. [Get specific scholarship program details](#get-specific-scholarship-program-details)
