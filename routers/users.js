@@ -46,6 +46,7 @@ route.get('/', (req,res) => {
 //endpoint for registering new user
 route.post('/', (req,res) => {
     //hashing the password
+    
     const hash = bcrypt.hashSync(req.body.password, 10);
 
     const userData = {
@@ -54,14 +55,14 @@ route.post('/', (req,res) => {
         email: req.body.email,
         password: hash
     };
+
     let success = 1;
-    
     try{
         var usersRef = db.collection('users');
         usersRef.get().then((data) => {
             data.forEach((userDoc) => {
+                const userDocData = userDoc.data();
                 if(userDocData.email === userData.email){
-                    var userDocData = userDoc.data()
                     success = 0;
                 }
             })
