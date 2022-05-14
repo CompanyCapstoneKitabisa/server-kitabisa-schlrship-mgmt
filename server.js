@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const userRoute = require('./routers/users.js');
 const loginRoute = require('./routers/login.js');
 const campaignRoute = require('./routers/campaign.js');
+const applicantRoute = require('./routers/applicants.js');
 
 const app = express();
 require('dotenv').config();
@@ -15,9 +16,11 @@ app.use(express.json());
 
 app.use('/users', userRoute);
 app.use('/login', loginRoute);
-// app.use('/campaigns', campaignRoute);
+app.use('/campaigns', campaignRoute);
+app.use('/applicants', applicantRoute);
 
 
 const server = app.listen(port, () => {
     console.log(`Listening to port ${port}`);
+    console.log('Connected to Database')
 });

@@ -15,8 +15,8 @@ route.get('/', (req,res) => {
     try{
         usersRef.get().then((data) => {
             data.forEach((userDoc) => {
-                var userDocData = userDoc.data()
                 if(userDoc.id === req.query.id){
+                    var userDocData = userDoc.data()
                     success = 1;
                     dataUser = {
                         id: userDoc.id,
@@ -60,8 +60,8 @@ route.post('/', (req,res) => {
         var usersRef = db.collection('users');
         usersRef.get().then((data) => {
             data.forEach((userDoc) => {
-                var userDocData = userDoc.data()
                 if(userDocData.email === userData.email){
+                    var userDocData = userDoc.data()
                     success = 0;
                 }
             })
