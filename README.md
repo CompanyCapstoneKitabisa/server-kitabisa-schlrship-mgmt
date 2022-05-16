@@ -13,7 +13,7 @@
     3. [Get all applicants in a specific scholarship program](#get-all-applicants-in-a-specific-scholarship-program)
     4. [Getting all rejected applicants from specific scholarship program](#getting-all-rejected-applicants-from-specific-scholarship-program)
     5. [Getting all accepted applicants from specific scholarship program](#getting-all-accepted-applicants-from-specific-scholarship-program)
-    6. [Search applicant by name](#search-applicant-by-name)
+    6. [Search applicant by name in a specific campaign](#search-applicant-by-name-in-a-specific-campaign)
 5. [Applicants](#applicants)
     1. [Get specific applicants detail](#get-specific-applicants-detail)
     2. [Update specific applicant status](#update-specific-applicant-status)
@@ -225,7 +225,7 @@ if registering with registered email
 }
 ```
 
-### Search applicant by name in a specific campaigns
+### Search applicant by name in a specific campaign
 - URL
   - /campaigns/{id_campaigns}/applicants/{search_string}
 - Method
