@@ -63,54 +63,6 @@ route.get('/', (req,res) => {
 
 })
 
-//Search applicant by name
-route.get('/search', (req,res) => {
-    const applicantsRef = db.collection('applicants')
-
-    const name = req.body.name
-    const lower_name = name.toLowerCase()
-
-    let counter = 0;
-    let searchResult = [];
-
-    try{
-        applicantsRef.get().then((data) => {
-            data.forEach((userData) => {
-                const userDataDetails = userData.data()
-                const user_name = userDataDetails.name
-                let lower_user_name = user_name.toLowerCase()
-                if(lower_user_name.includes(lower_name)){
-                    let Datafound = {
-                        id: userData.id,
-                        name: userDataDetails.name,
-                        university: userDataDetails.university,
-                        rank: userDataDetails.rank,
-                        score: userDataDetails.score,
-                        status: userDataDetails.status
-                    }
-                    searchResult.push(Datafound)
-                }
-
-                counter++
-
-                if(counter === data.size){
-                    res.status(200).send({
-                        error: false,
-                        message: "Search result",
-                        listApplicants: searchResult
-                    })
-                }
-            })
-        })
-    } catch (e){
-        res.status(500).send({
-            message: "Internal server error"
-        })
-    }
-
-
-})
-
 //update specific applicant status
 route.post('/:id/update', (req,res) => {
     const id = req.params.id
