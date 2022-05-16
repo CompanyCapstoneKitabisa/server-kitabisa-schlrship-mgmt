@@ -13,10 +13,10 @@
     3. [Get all applicants in a specific scholarship program](#get-all-applicants-in-a-specific-scholarship-program)
     4. [Getting all rejected applicants from specific scholarship program](#getting-all-rejected-applicants-from-specific-scholarship-program)
     5. [Getting all accepted applicants from specific scholarship program](#getting-all-accepted-applicants-from-specific-scholarship-program)
+    6. [Search applicant by name](#search-applicant-by-name)
 5. [Applicants](#applicants)
     1. [Get specific applicants detail](#get-specific-applicants-detail)
-    2. [Search applicant by name](#search-applicant-by-name)
-    3. [Update specific applicant status](#update-specific-applicant-status)
+    2. [Update specific applicant status](#update-specific-applicant-status)
 
 ## Endpoint
 https://kitabisa-test-app.herokuapp.com
@@ -225,6 +225,36 @@ if registering with registered email
 }
 ```
 
+### Search applicant by name in a specific campaigns
+- URL
+  - /campaigns/{id_campaigns}/applicants/{search_string}
+- Method
+  - GET
+- Request parameter
+  - id_campaigns as string 
+  - search_string as string
+- Response
+```
+{
+    "error": false,
+    "message": "Search result",
+    "listApplicants": [
+        {
+            "id": "M79hhdRa9DEptBpXR4qZ",
+            "name": "RaNdy Sukarto",
+            "university": "IPB",
+            "status": "rejected"
+        },
+        {
+            "id": "yCJOWYTvcsCEY3JFHk0Y",
+            "name": "Randy",
+            "university": "UMN",
+            "status": "accepted"
+        }
+    ]
+}
+```
+
 ## Applicants
 ### Get specific applicants detail
 - URL
@@ -284,35 +314,6 @@ if registering with registered email
             }
         ]
     }
-}
-```
-
-### Search applicant by name
-- URL
-  - /applicants/search
-- Method
-  - GET
-- Request body
-  - name as string
-- Response
-```
-{
-    "error": false,
-    "message": "Search result",
-    "listApplicants": [
-        {
-            "id": "M79hhdRa9DEptBpXR4qZ",
-            "name": "RaNdy Sukarto",
-            "university": "IPB",
-            "status": "rejected"
-        },
-        {
-            "id": "yCJOWYTvcsCEY3JFHk0Y",
-            "name": "Randy",
-            "university": "UMN",
-            "status": "accepted"
-        }
-    ]
 }
 ```
 
