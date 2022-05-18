@@ -11,120 +11,102 @@ route.get('/', (req,res) => {
     const id = req.query.id;
     var applicantsRef = db.collection('applicants');
     var success = 0;
+    let fetchedData = {};
 
     applicantsRef.get().then((data) => {
         data.forEach((applicantsData) => {
             if(id === applicantsData.id){
                 success = 1;
                 var applicantsDataDetail = applicantsData.data();
-                var fetchedData = {
+                fetchedData = {
                     id: id,
-                    name: applicantsDataDetail.name,
-                    photoUrl: applicantsDataDetail.photoUrl,
-                    email: applicantsDataDetail.email,
-                    university: applicantsDataDetail.university,
-                    jurusan: applicantsDataDetail.jurusan,
-                    angkatan: applicantsDataDetail.angkatan,
-                    provinsi: applicantsDataDetail.provinsi,
-                    kota: applicantsDataDetail.kota,
-                    kecamatan: applicantsDataDetail.kecamatan,
-                    kelurahan: applicantsDataDetail.kelurahan,
+                    nim: applicantsDataDetail.NIM,
+                    nik: applicantsDataDetail.NIK,
+                    ajuanPenunjangPendidikan: applicantsDataDetail.ajuanPenunjangPendidikan,
                     alamat: applicantsDataDetail.alamat,
-                    nim: applicantsDataDetail.nim,
-                    nik: applicantsDataDetail.nik,
-                    phoneNumber: applicantsDataDetail.phoneNumber,
+                    buktiIP: applicantsDataDetail.buktiIP,
+                    buktiIPK: applicantsDataDetail.buktiIPK,
+                    currIP: applicantsDataDetail.currIP,
+                    deadlineUKT: applicantsDataDetail.deadlineUKT,
+                    dokumenApplicant: applicantsDataDetail.dokumenApplicant,
+                    email: applicantsDataDetail.email,
+                    essayKegiatan: applicantsDataDetail.essayKegiatan,
+                    essayKondisi: applicantsDataDetail.essayKondisi,
+                    essayPenting: applicantsDataDetail.essayPenting,
+                    fotoEssayKegiatan: applicantsDataDetail.fotoEssayKegiatan,
+                    fotoRumah: applicantsDataDetail.fotoRumah,
+                    jenisBantuan: applicantsDataDetail.jenisBantuan,
+                    kecamatan: applicantsDataDetail.kecamatan,
+                    kotaKabupaten: applicantsDataDetail.kotaKabupaten,
+                    lamaranBeasiswa: applicantsDataDetail.lamaranBeasiswa,
+                    name: applicantsDataDetail.name,
+                    noTlp: applicantsDataDetail.noTlp,
+                    proposalTunjanganBiaya: applicantsDataDetail.proposalTunjanganBiaya,
+                    provinsi: applicantsDataDetail.provinsi,
+                    rincianTunjangan: applicantsDataDetail.rincianTunjangan,
                     sosmedAcc: applicantsDataDetail.sosmedAcc,
                     status: applicantsDataDetail.status,
-                    essay: applicantsDataDetail.essay,
-                    jenisBantuan: applicantsDataDetail.jenisBantuan,
-                    jumlahBiaya: applicantsDataDetail.jumlahBiaya,
-                    deadlinePembayaran: applicantsDataDetail.deadlinePembayaran,
-                    kebutuhanPenunjang: applicantsDataDetail.kebutuhanPenunjang,
-                    rincianBiayaPenunjang: applicantsDataDetail.rincianBiayaPenunjang,
-                    images: applicantsDataDetail.images
+                    statusKepemilikanRumah: applicantsDataDetail.statusKepemilikanRumah,
+                    submittedAt: applicantsDataDetail.submittedAt,
+                    suratRekomendasiDosen: applicantsDataDetail.suratRekomendasiDosen,
+                    token: applicantsDataDetail.token,
+                    totalIPK: applicantsDataDetail.totalIPK,
+                    uktDanSemester: applicantsDataDetail.uktDanSemester,
+                    university: applicantsDataDetail.university
                 }
             }
 
-            if(success === 1){
-                res.status(200).send({
-                    error: false,
-                    message: "Data successfully fetched",
-                    fetchedData
-                })
-            } else if(success === 0){
-                res.status(200).send({
-                    error: false,
-                    message: "Data not found"
-                })
-            }
         })
+        if(success === 1){
+            res.status(200).send({
+                error: false,
+                message: "Data successfully fetched",
+                fetchedData
+            })
+        } else if(success === 0){
+            res.status(200).send({
+                error: false,
+                message: "Data not found"
+            })
+        }
     })
 
 })
 
-route.get('/search', (req,res) => {
-    const applicantsRef = db.collection('applicants')
-
-    const name = req.body.name
-    const lower_name = name.toLowerCase()
-
-    let counter = 0;
-    let searchResult = [];
-
-    try{
-        applicantsRef.get().then((data) => {
-            data.forEach((userData) => {
-                const userDataDetails = userData.data()
-                const user_name = userDataDetails.name
-                let lower_user_name = user_name.toLowerCase()
-                if(lower_user_name.includes(lower_name)){
-                    let Datafound = {
-                        id: userData.id,
-                        name: userDataDetails.name,
-                        university: userDataDetails.university,
-                        rank: userDataDetails.rank,
-                        score: userDataDetails.score,
-                        status: userDataDetails.status
-                    }
-                    searchResult.push(Datafound)
-                }
-
-                counter++
-
-                if(counter === data.size){
-                    res.status(200).send({
-                        error: false,
-                        message: "Search result",
-                        listApplicants: searchResult
-                    })
-                }
-            })
-        })
-    } catch (e){
-        res.status(500).send({
-            message: "Internal server error"
-        })
-    }
-
-
-})
-
-route.post('/:id', (req,res) => {
+//update specific applicant status
+route.post('/:id/update', (req,res) => {
     const id = req.params.id
     const statusUpdate = req.body.status
     const lower_statusUpdate = statusUpdate.toLowerCase()
+    const applicantsRef = db.collection('applicants')
 
-    if(lower_statusUpdate === 'rejected' || lower_statusUpdate === 'accepted' || lower_statusUpdate === ""){
-        const applicantsRef = db.collection('applicants').doc(id).update({status: lower_statusUpdate}).then(
-            res.status(200).send({
-                error: false,
-                message: "Status updated"
-            })
-        )
-    } else {
-        res.status(200).send({
-            error: true,
-            message: "Wrong Data"
+    try{
+        applicantsRef.doc(id).get().then((data) => {
+            if(data.data() === undefined){
+                res.status(200).send({
+                    error: "true",
+                    message: "Could not update status, applicant not found"
+                })
+            }else{
+                if(lower_statusUpdate === 'rejected' || lower_statusUpdate === 'accepted' || lower_statusUpdate === ""){
+                    applicantsRef.doc(id).update({status: lower_statusUpdate}).then(
+                        res.status(200).send({
+                            error: false,
+                            message: "Status updated"
+                        })
+                    )
+                } else {
+                    res.status(200).send({
+                        error: true,
+                        message: "Wrong Data"
+                    })
+                }
+            }
+        })
+
+    } catch (e) {
+        res.status(500).send({
+            message: "Internal server error"
         })
     }
 })
