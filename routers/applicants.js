@@ -20,29 +20,39 @@ route.get('/', (req,res) => {
                 var applicantsDataDetail = applicantsData.data();
                 fetchedData = {
                     id: id,
-                    name: applicantsDataDetail.name,
-                    photoUrl: applicantsDataDetail.photoUrl,
-                    email: applicantsDataDetail.email,
-                    university: applicantsDataDetail.university,
-                    jurusan: applicantsDataDetail.jurusan,
-                    angkatan: applicantsDataDetail.angkatan,
-                    provinsi: applicantsDataDetail.provinsi,
-                    kota: applicantsDataDetail.kota,
-                    kecamatan: applicantsDataDetail.kecamatan,
-                    kelurahan: applicantsDataDetail.kelurahan,
+                    nim: applicantsDataDetail.NIM,
+                    nik: applicantsDataDetail.NIK,
+                    ajuanPenunjangPendidikan: applicantsDataDetail.ajuanPenunjangPendidikan,
                     alamat: applicantsDataDetail.alamat,
-                    nim: applicantsDataDetail.nim,
-                    nik: applicantsDataDetail.nik,
-                    phoneNumber: applicantsDataDetail.phoneNumber,
+                    buktiIP: applicantsDataDetail.buktiIP,
+                    buktiIPK: applicantsDataDetail.buktiIPK,
+                    currIP: applicantsDataDetail.currIP,
+                    deadlineUKT: applicantsDataDetail.deadlineUKT,
+                    dokumenApplicant: applicantsDataDetail.dokumenApplicant,
+                    email: applicantsDataDetail.email,
+                    essayKegiatan: applicantsDataDetail.essayKegiatan,
+                    essayKondisi: applicantsDataDetail.essayKondisi,
+                    essayPenting: applicantsDataDetail.essayPenting,
+                    fotoEssayKegiatan: applicantsDataDetail.fotoEssayKegiatan,
+                    fotoRumah: applicantsDataDetail.fotoRumah,
+                    jenisBantuan: applicantsDataDetail.jenisBantuan,
+                    kecamatan: applicantsDataDetail.kecamatan,
+                    kotaKabupaten: applicantsDataDetail.kotaKabupaten,
+                    lamaranBeasiswa: applicantsDataDetail.lamaranBeasiswa,
+                    name: applicantsDataDetail.name,
+                    noTlp: applicantsDataDetail.noTlp,
+                    proposalTunjanganBiaya: applicantsDataDetail.proposalTunjanganBiaya,
+                    provinsi: applicantsDataDetail.provinsi,
+                    rincianTunjangan: applicantsDataDetail.rincianTunjangan,
                     sosmedAcc: applicantsDataDetail.sosmedAcc,
                     status: applicantsDataDetail.status,
-                    essay: applicantsDataDetail.essay,
-                    jenisBantuan: applicantsDataDetail.jenisBantuan,
-                    jumlahBiaya: applicantsDataDetail.jumlahBiaya,
-                    deadlinePembayaran: applicantsDataDetail.deadlinePembayaran,
-                    kebutuhanPenunjang: applicantsDataDetail.kebutuhanPenunjang,
-                    rincianBiayaPenunjang: applicantsDataDetail.rincianBiayaPenunjang,
-                    images: applicantsDataDetail.images
+                    statusKepemilikanRumah: applicantsDataDetail.statusKepemilikanRumah,
+                    submittedAt: applicantsDataDetail.submittedAt,
+                    suratRekomendasiDosen: applicantsDataDetail.suratRekomendasiDosen,
+                    token: applicantsDataDetail.token,
+                    totalIPK: applicantsDataDetail.totalIPK,
+                    uktDanSemester: applicantsDataDetail.uktDanSemester,
+                    university: applicantsDataDetail.university
                 }
             }
 
@@ -68,18 +78,35 @@ route.post('/:id/update', (req,res) => {
     const id = req.params.id
     const statusUpdate = req.body.status
     const lower_statusUpdate = statusUpdate.toLowerCase()
+    const applicantsRef = db.collection('applicants')
 
-    if(lower_statusUpdate === 'rejected' || lower_statusUpdate === 'accepted' || lower_statusUpdate === ""){
-        const applicantsRef = db.collection('applicants').doc(id).update({status: lower_statusUpdate}).then(
-            res.status(200).send({
-                error: false,
-                message: "Status updated"
-            })
-        )
-    } else {
-        res.status(200).send({
-            error: true,
-            message: "Wrong Data"
+    try{
+        applicantsRef.doc(id).get().then((data) => {
+            if(data.data() === undefined){
+                res.status(200).send({
+                    error: "true",
+                    message: "Could not update status, applicant not found"
+                })
+            }else{
+                if(lower_statusUpdate === 'rejected' || lower_statusUpdate === 'accepted' || lower_statusUpdate === ""){
+                    applicantsRef.doc(id).update({status: lower_statusUpdate}).then(
+                        res.status(200).send({
+                            error: false,
+                            message: "Status updated"
+                        })
+                    )
+                } else {
+                    res.status(200).send({
+                        error: true,
+                        message: "Wrong Data"
+                    })
+                }
+            }
+        })
+
+    } catch (e) {
+        res.status(500).send({
+            message: "Internal server error"
         })
     }
 })

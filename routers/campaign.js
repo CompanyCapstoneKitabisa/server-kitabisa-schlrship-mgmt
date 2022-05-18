@@ -20,7 +20,8 @@ route.get('/', (req,res) => {
                     id: campaignData.id,
                     name: campaignDataDetails.name,
                     penggalangDana: campaignDataDetails.penggalangDana,
-                    photoUrl: campaignDataDetails.photoUrl
+                    photoUrl: campaignDataDetails.photoUrl,
+                    SnK: campaignDataDetails.SnK
                 }
 
                 campaignList.push(fetchedData)
@@ -86,7 +87,7 @@ route.get('/:id',checkCampaign, (req,res) => {
 
                     //just in case if one of the applicants not found in db
                     if(userDataDetails === undefined){
-                        res.status(404).send({
+                        res.status(200).send({
                             message: `Failed to fetch applicants with id ${d}. not registered in db.`
                         })
                     }
@@ -326,12 +327,12 @@ route.get('/:id/accepted',checkCampaign, (req,res) => {
                                 res.status(200).send({
                                     error: false,
                                     campaign: data.data().name,
-                                    message: "No rejected applicants",
+                                    message: "No accepted applicants",
                                 })
                             } else {
                                 res.status(200).send({
                                     error: false,
-                                    message: "Fetched all rejected applicants",
+                                    message: "Fetched all accepted applicants",
                                     campaign: data.data().name,
                                     listApplicants
                                 })
