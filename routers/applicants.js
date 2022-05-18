@@ -41,6 +41,7 @@ route.get('/', (req,res) => {
                     lamaranBeasiswa: applicantsDataDetail.lamaranBeasiswa,
                     name: applicantsDataDetail.name,
                     noTlp: applicantsDataDetail.noTlp,
+                    photoUrl: applicantsDataDetail.photoUrl,
                     proposalTunjanganBiaya: applicantsDataDetail.proposalTunjanganBiaya,
                     provinsi: applicantsDataDetail.provinsi,
                     rincianTunjangan: applicantsDataDetail.rincianTunjangan,
