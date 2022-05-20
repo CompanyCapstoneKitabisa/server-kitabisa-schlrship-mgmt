@@ -20,6 +20,7 @@ route.get('/', (req,res) => {
                 var applicantsDataDetail = applicantsData.data();
                 fetchedData = {
                     id: id,
+                    photo: applicantsDataDetail.photo,
                     name: applicantsDataDetail.name,
                     NIK: applicantsDataDetail.NIK,
                     provinsi: applicantsDataDetail.provinsi,
@@ -53,7 +54,8 @@ route.get('/', (req,res) => {
                     buktiIP: applicantsDataDetail.buktiIP,
                     KTM: applicantsDataDetail.KTM,
                     KTP: applicantsDataDetail.KTP,
-                    lampiranDokumen: applicantsDataDetail.lampiranDokumen
+                    lampiranDokumen: applicantsDataDetail.lampiranDokumen,
+                    notes: applicantsDataDetail.notes
                 }
             }
 
