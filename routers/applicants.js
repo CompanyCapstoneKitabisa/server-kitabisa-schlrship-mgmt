@@ -34,7 +34,7 @@ route.get('/', (req,res) => {
                     university: applicantsDataDetail.university,
                     NIM: applicantsDataDetail.NIM,
                     jurusan: applicantsDataDetail.jurusan,
-                    angkatan: applicantsDataDetail.angaktan,
+                    angkatan: applicantsDataDetail.angkatan,
                     IP: applicantsDataDetail.IP,
                     IPK: applicantsDataDetail.IPK,
                     pilihanBantuanBiaya: applicantsDataDetail.pilihanBantuanBiaya,
