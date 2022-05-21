@@ -46,7 +46,7 @@ route.get('/', (req,res) => {
                     biayaKebutuhan2: applicantsDataDetail.biayaKebutuhan2,
                     ceritaKondisi: applicantsDataDetail.ceritaKondisi,
                     ceritaSeberapaPenting: applicantsDataDetail.ceritaSeberapaPenting,
-                    ceritaKegiatan: applicantsDataDetail.ceritaKegiatan,
+                    ceritaKegiatan: applicantsDataDetail.ceritaKegiatanAktif,
                     fotoKegiatan: applicantsDataDetail.fotoKegiatan,
                     fotoRumah: applicantsDataDetail.fotoRumah,
                     statusKepemilikanRumah: applicantsDataDetail.statusKepemilikanRumah,
