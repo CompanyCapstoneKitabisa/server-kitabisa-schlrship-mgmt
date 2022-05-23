@@ -1,13 +1,14 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const dbconf = require('./firebase conf.js');
+const auth = require('../midWare/auth.js');
 
 const route = express();
 
 const db = dbconf.firestore();
 
 //API specific applicants detail
-route.get('/', (req,res) => {
+route.get('/',auth, (req,res) => {
     const id = req.query.id;
     var applicantsRef = db.collection('applicants');
     var success = 0;
@@ -77,7 +78,7 @@ route.get('/', (req,res) => {
 })
 
 //update specific applicant status
-route.post('/:id/update', (req,res) => {
+route.post('/:id/update',auth, (req,res) => {
     const id = req.params.id
     const statusUpdate = req.body.status
     const lower_statusUpdate = statusUpdate.toLowerCase()
@@ -110,6 +111,61 @@ route.post('/:id/update', (req,res) => {
     } catch (e) {
         res.status(500).send({
             message: "Internal server error"
+        })
+    }
+})
+
+route.get('/:id/notes', auth, (req,res) => {
+    const id = req.params.id;
+    const applicantsRef = db.collection('applicants');
+
+    try{
+        applicantsRef.doc(id).get().then((data) => {
+            if(data.data() === undefined){
+                res.status(200).send({
+                    message: `Can't found applicant with id ${id}`
+                })
+            } else{
+                res.status(200).send({
+                    message: "Data fetched",
+                    data: {
+                        name: data.data().name,
+                        notes: data.data().notes
+                    }
+                })
+            }
+        })
+    } catch (e) {
+        res.status(500).send({
+            message: "Internal server error",
+            error: e
+        })
+    }
+})
+
+route.post('/:id/notes',auth, (req,res) => {
+    const id = req.params.id;
+    const new_notes = req.body.notes;
+    const applicantsRef = db.collection('applicants');
+
+    try{
+        applicantsRef.doc(id).get().then((data) => {
+            if(data.data() === undefined){
+                res.status(200).send({
+                    message: `Can't found applicant with id ${id}` 
+                })
+            } else{
+                applicantsRef.doc(id).update({notes: new_notes}).then(
+                    res.status(200).send({
+                        message: "Notes updated"
+                    })
+                )
+            }
+        })
+    } catch (e) {
+        res.status(500).send({
+            message: "Internal server error",
+            error: e
         })
     }
 })

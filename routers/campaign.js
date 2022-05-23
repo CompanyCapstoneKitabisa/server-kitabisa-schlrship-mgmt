@@ -2,13 +2,14 @@ const express = require('express');
 const admin = require('firebase-admin');
 const dbconf = require('./firebase conf.js');
 const checkCampaign = require('../midWare/checkCampaign.js');
+const auth = require('../midWare/auth.js');
 
 const route = express();
 
 const db = dbconf.firestore();
 
 //API to get all available campaigns
-route.get('/', (req,res) => {
+route.get('/',auth, (req,res) => {
     const campaignRef = db.collection('campaigns');
     let campaignList = [];
 
@@ -48,7 +49,7 @@ route.get('/', (req,res) => {
 })
 
 //get specific scholarship program details
-route.get('/:id',checkCampaign, (req,res) => {
+route.get('/:id', auth, checkCampaign, (req,res) => {
     const id = req.params.id
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
@@ -133,7 +134,7 @@ route.get('/:id',checkCampaign, (req,res) => {
 })
 
 //getting all applicants in a specific scholarship program
-route.get('/:id/applicants',checkCampaign, (req,res) => {
+route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
     const id = req.params.id;
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
@@ -182,7 +183,7 @@ route.get('/:id/applicants',checkCampaign, (req,res) => {
 })
 
 //Search applicant by name
-route.get('/:id/applicants/:applicantsName',checkCampaign, (req,res) => {
+route.get('/:id/applicants/:applicantsName',auth, checkCampaign, (req,res) => {
     const applicantsRef = db.collection('applicants')
     const campaignRef = db.collection('campaigns')
 
@@ -236,7 +237,7 @@ route.get('/:id/applicants/:applicantsName',checkCampaign, (req,res) => {
 })
 
 //getting all rejected applicants from specific scholarship program
-route.get('/:id/rejected',checkCampaign, (req,res) => {
+route.get('/:id/rejected',auth, checkCampaign, (req,res) => {
     const id = req.params.id;
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
@@ -293,7 +294,7 @@ route.get('/:id/rejected',checkCampaign, (req,res) => {
 })
 
 //getting all accepted applicants from specific scholarship program
-route.get('/:id/accepted',checkCampaign, (req,res) => {
+route.get('/:id/accepted',auth, checkCampaign, (req,res) => {
     const id = req.params.id;
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
