@@ -1,6 +1,6 @@
 const express = require('express');
 const admin = require('firebase-admin');
-const dbconf = require('./firebase conf.js');
+const dbconf = require('../config/firebase conf.js');
 const auth = require('../midWare/auth.js');
 
 const route = express();
@@ -20,42 +20,48 @@ route.get('/',auth, (req,res) => {
                 success = 1;
                 var applicantsDataDetail = applicantsData.data();
                 fetchedData = {
-                    id: id,
-                    photo: applicantsDataDetail.photo,
-                    name: applicantsDataDetail.name,
-                    NIK: applicantsDataDetail.NIK,
-                    provinsi: applicantsDataDetail.provinsi,
-                    kotaKabupaten: applicantsDataDetail.kotaKabupaten,
-                    kecamatan: applicantsDataDetail.kecamatan,
-                    kelurahan: applicantsDataDetail.kelurahan,
-                    alamat: applicantsDataDetail.alamat,
-                    noPonsel: applicantsDataDetail.noPonsel,
-                    email: applicantsDataDetail.email,
-                    sosmedAcc: applicantsDataDetail.sosmedAcc,
-                    university: applicantsDataDetail.university,
-                    NIM: applicantsDataDetail.NIM,
-                    jurusan: applicantsDataDetail.jurusan,
-                    angkatan: applicantsDataDetail.angkatan,
-                    IP: applicantsDataDetail.IP,
-                    IPK: applicantsDataDetail.IPK,
-                    pilihanBantuanBiaya: applicantsDataDetail.pilihanBantuanBiaya,
-                    jumlahBiayaUKT: applicantsDataDetail.jumlahBiayaUKT,
-                    deadlinePembayaran: applicantsDataDetail.deadlinePembayaran,
-                    kebutuhan1: applicantsDataDetail.kebutuhan1,
-                    biayaKebutuhan1: applicantsDataDetail.biayaKebutuhan1,
-                    kebutuhan2: applicantsDataDetail.kebutuhan2,
-                    biayaKebutuhan2: applicantsDataDetail.biayaKebutuhan2,
-                    ceritaKondisi: applicantsDataDetail.ceritaKondisi,
-                    ceritaSeberapaPenting: applicantsDataDetail.ceritaSeberapaPenting,
-                    ceritaKegiatan: applicantsDataDetail.ceritaKegiatanAktif,
-                    fotoKegiatan: applicantsDataDetail.fotoKegiatan,
-                    fotoRumah: applicantsDataDetail.fotoRumah,
-                    statusKepemilikanRumah: applicantsDataDetail.statusKepemilikanRumah,
-                    buktiIPK: applicantsDataDetail.buktiIPK,
-                    buktiIP: applicantsDataDetail.buktiIP,
-                    KTM: applicantsDataDetail.KTM,
-                    KTP: applicantsDataDetail.KTP,
-                    lampiranDokumen: applicantsDataDetail.lampiranDokumen,
+                    bioDiri: {
+                        nama: applicantsDataDetail.bioDiri.namaLengkap,
+                        provinsi: applicantsDataDetail.bioDiri.provinsi,
+                        kotaKabupaten: applicantsDataDetail.bioDiri.kotaKabupaten,
+                        alamat: applicantsDataDetail.bioDiri.alamat,
+                        NIK: applicantsDataDetail.bioDiri.NIK,
+                        fotoKTP: applicantsDataDetail.bioDiri.fotoKTP,
+                        fotoDiri: applicantsDataDetail.bioDiri.fotoDiri,
+                        sosmedAcc: applicantsDataDetail.bioDiri.sosmedAcc
+                    },
+                    bioPendidikan: {
+                        tingkatPendidikan: applicantsDataDetail.bioPendidikan.tingkatPendidikan,
+                        jurusan: applicantsDataDetail.bioPendidikan.jurusan,
+                        NIM: applicantsDataDetail.bioPendidikan.NIM,
+                        fotoKTM: applicantsDataDetail.bioPendidikan.fotoKTM,
+                        fotoIPKAtauRapor: applicantsDataDetail.bioPendidikan.fotoIPKAtauRapor
+                    },
+                    pengajuanBantuan: {
+                        kebutuhan: applicantsDataDetail.pengajuanBantuan.kebutuhan,
+                        totalBiaya: applicantsDataDetail.pengajuanBantuan.totalBiaya,
+                        fotoBuktiTunggakan: applicantsDataDetail.pengajuanBantuan.fotoBuktiTunggakan,
+                        ceritaPenggunaanDana: applicantsDataDetail.pengajuanBantuan.ceritaPenggunaanDana,
+                        kepemilikanRumah: applicantsDataDetail.pengajuanBantuan.kepemilikanRumah,
+                        fotoRumah: applicantsDataDetail.pengajuanBantuan.fotoRumah
+                    },
+                    motivationLater: {
+                        ceritaLatarBelakang: applicantsDataDetail.motivationLater.ceritaLatarBelakang,
+                        ceritaPerjuangan: applicantsDataDetail.motivationLater.ceritaPerjuangan,
+                        ceritaPentingnyaBeasiswa: applicantsDataDetail.motivationLater.ceritaPentingnyaBeasiswa,
+                        ceritakegiatanYangDigeluti: applicantsDataDetail.motivationLater.ceritakegiatanYangDigeluti,
+                        fotoBuktiKegiatan: applicantsDataDetail.motivationLater.fotoBuktiKegiatan
+                    },
+                    status: {
+                        applicant: applicantsDataDetail.status.applicant,
+                        dataApplicant: applicantsDataDetail.status.dataApplicant,
+                        dataRumah: applicantsDataDetail.status.dataRumah
+                    },
+                    lampiranTambahan: applicantsDataDetail.lampiranTambahan,
+                    lembarPersetujuan: applicantsDataDetail.lembarPersetujuan,
+                    misc: {
+                        beasiswaTerdaftar: applicantsDataDetail.misc.beasiswaTerdaftar
+                    },
                     notes: applicantsDataDetail.notes
                 }
             }
@@ -78,10 +84,21 @@ route.get('/',auth, (req,res) => {
 })
 
 //update specific applicant status
-route.post('/:id/update',auth, (req,res) => {
+route.post('/:id/updateStatus', auth, (req,res) => {
     const id = req.params.id
-    const statusUpdate = req.body.status
-    const lower_statusUpdate = statusUpdate.toLowerCase()
+
+    const statusApplicant =  req.body.statusApplicant
+    const statusData = req.body.statusData
+    const statusRumah = req.body.statusRumah
+
+    let lower_statusApplicant = '';
+    let lower_statusRumah = '';
+    let lower_statusData = '';
+
+    let finalReportSA = 'Data not updated. No input for this data';
+    let finalReportSD = 'Data not updated. No input for this data';
+    let finalReportR = 'Data not updated. No input for this data';
+
     const applicantsRef = db.collection('applicants')
 
     try{
@@ -92,22 +109,46 @@ route.post('/:id/update',auth, (req,res) => {
                     message: "Could not update status, applicant not found"
                 })
             }else{
-                if(lower_statusUpdate === 'rejected' || lower_statusUpdate === 'accepted' || lower_statusUpdate === ""){
-                    applicantsRef.doc(id).update({status: lower_statusUpdate}).then(
-                        res.status(200).send({
-                            error: false,
-                            message: "Status updated"
-                        })
-                    )
-                } else {
-                    res.status(200).send({
-                        error: true,
-                        message: "Wrong Data"
-                    })
+                if(statusApplicant !== undefined){
+                    lower_statusApplicant = statusApplicant.toLowerCase()
+                    if(lower_statusApplicant === 'rejected' || lower_statusApplicant === 'accepted' || lower_statusApplicant === "pending" || lower_statusApplicant === "onhold"){
+                        applicantsRef.doc(id).update({statusApplicant: lower_statusApplicant})
+                        finalReportSA = 'Data Updated';
+                    }else{
+                        finalReportSA ="Failed to update, wrong input data";
+                    }
+                }
+
+                if(statusData !== undefined){
+                    lower_statusData = statusData.toLowerCase()
+                    if(lower_statusData === 'rejected' || lower_statusData === 'accepted' || lower_statusData === "pending" || lower_statusData === "onhold"){
+                        applicantsRef.doc(id).update({statusData: lower_statusData})
+                        finalReportSD = 'Data Updated';
+                    }else{
+                        finalReportSD ="Failed to update, wrong input data";
+                    }
+                }
+
+                if(statusRumah !== undefined){
+                    lower_statusRumah = statusRumah.toLowerCase()
+                    if(lower_statusRumah === 'rejected' || lower_statusRumah === 'accepted' || lower_statusRumah === "pending" || lower_statusRumah === "onhold"){
+                        applicantsRef.doc(id).update({statusRumah: lower_statusRumah})
+                        finalReportR = 'Data Updated';
+                    }else{
+                        finalReportR = "Failed to update, wrong input data";
+                    }
                 }
             }
-        })
 
+            res.status(200).send({
+                error: false,
+                message: {
+                    statusApplicant: finalReportSA,
+                    statusData: finalReportSD,
+                    statusRumah: finalReportR
+                }
+            })
+        })
     } catch (e) {
         res.status(500).send({
             message: "Internal server error"

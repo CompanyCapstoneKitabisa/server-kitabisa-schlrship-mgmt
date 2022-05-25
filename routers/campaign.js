@@ -1,12 +1,42 @@
 const express = require('express');
 const admin = require('firebase-admin');
-const dbconf = require('./firebase conf.js');
+const dbconf = require('../config/firebase conf.js');
 const checkCampaign = require('../midWare/checkCampaign.js');
 const auth = require('../midWare/auth.js');
+const axios = require('axios');
 
 const route = express();
 
 const db = dbconf.firestore();
+
+//To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
+route.get('/:id/applicants/processData', (req,res) => {
+    const campaignRef = db.collection('campaigns');
+    const idCampaign = req.params.id;
+    let campaignName = '';
+
+    //Get campaign name
+    campaignRef.doc(idCampaign).get().then((data) => {
+        campaignName = data.data().name
+
+        //Send to flask all data needed for prediction
+        axios.post("http://localhost:5000/", {
+            headers: {
+                "Content-Type": "applicatin/json" 
+            },
+            data: {
+                username: 'Randy Hanjaya',
+                beasiswa: campaignName
+            }
+        }) //getting the response from flask
+        .then((response) => {
+            console.log(response.data)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    })
+})
 
 //API to get all available campaigns
 route.get('/',auth, (req,res) => {
@@ -94,10 +124,10 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                     }
                     //else if applicants found in db
                     else{
-                        if(userDataDetails.status === 'rejected'){
+                        if(userDataDetails.statusApplicant === 'rejected'){
                             counterRejected++
                             applicantsNumber++
-                        }else if(userDataDetails.status === 'accepted'){
+                        }else if(userDataDetails.statusApplicant === 'accepted'){
                             counterAccepted++
                             applicantsNumber++
                         }
@@ -152,11 +182,11 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                 
                         const dataSend = {
                             id: userData.id,
-                            name: userDataDetails.name,
+                            name: userDataDetails.bioDiri.namaLengkap,
                             university: userDataDetails.university,
                             rank: userDataDetails.rank,
                             rating: userDataDetails.rating,
-                            status: userDataDetails.status
+                            status: userDataDetails.statusApplicant
                             }  
         
                             counter++
@@ -202,16 +232,16 @@ route.get('/:id/applicants/:applicantsName',auth, checkCampaign, (req,res) => {
             listApplicantsFound.forEach((LAF) => {
                 applicantsRef.doc(LAF).get().then((dataApplicant) => {
                     const userDataDetails = dataApplicant.data()
-                    const user_name = userDataDetails.name
+                    const user_name = userDataDetails.bioDiri.namaLengkap
                     let lower_user_name = user_name.toLowerCase()
                     if(lower_user_name.includes(lower_name)){
                         let Datafound = {
                             id: dataApplicant.id,
-                            name: userDataDetails.name,
+                            name: userDataDetails.bioDiri.namaLengkap,
                             university: userDataDetails.university,
                             rank: userDataDetails.rank,
                             score: userDataDetails.score,
-                            status: userDataDetails.status
+                            status: userDataDetails.statusApplicant
                         }
                         searchResult.push(Datafound)
                     }
@@ -252,14 +282,14 @@ route.get('/:id/rejected',auth, checkCampaign, (req,res) => {
                     applicantRef.doc(d).get().then((userData) => {
                         const userDataDetails = userData.data()
                         
-                        if(userDataDetails.status === 'rejected'){
+                        if(userDataDetails.statusApplicant === 'rejected'){
                             const dataSend = {
                                 id: userData.id,
-                                name: userDataDetails.name,
+                                name: userDataDetails.bioDiri.namaLengkap,
                                 university: userDataDetails.university,
                                 rank: userDataDetails.rank,
                                 rating: userDataDetails.rating,
-                                status: userDataDetails.status
+                                status: userDataDetails.statusApplicant
                             }  
                             listApplicants.push(dataSend)
                         }
@@ -302,21 +332,21 @@ route.get('/:id/accepted',auth, checkCampaign, (req,res) => {
     let counter = 0;
 
     try{
-        campaignRef.doc(`${id}`).get().then((data) => {
+        campaignRef.doc(id).get().then((data) => {
             if(id === data.id){
                 const applicantsInCampaign = data.data().applicants
                 applicantsInCampaign.forEach((d) => {
                     applicantRef.doc(d).get().then((userData) => {
                         const userDataDetails = userData.data()
                         
-                        if(userDataDetails.status === 'accepted'){
+                        if(userDataDetails.statusApplicant === 'accepted'){
                             const dataSend = {
                                 id: userData.id,
-                                name: userDataDetails.name,
+                                name: userDataDetails.bioDiri.namaLengkap,
                                 university: userDataDetails.university,
                                 rank: userDataDetails.rank,
                                 rating: userDataDetails.rating,
-                                status: userDataDetails.status
+                                status: userDataDetails.statusApplicant
                             }  
                             listApplicants.push(dataSend)
                         }

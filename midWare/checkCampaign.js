@@ -1,4 +1,4 @@
-const dbconf = require('../routers/firebase conf');
+const dbconf = require('../config/firebase conf.js');
 
 const db = dbconf.firestore();
 

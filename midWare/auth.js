@@ -1,4 +1,4 @@
-const dbconf = require('../routers/firebase conf');
+const dbconf = require('../config/firebase conf.js');
 
 const db = dbconf.firestore();
 
@@ -10,7 +10,7 @@ function auth (req,res,next){
         })
     } else {
         try{
-            if(dbconf.auth().verifyIdToken(token)){
+            if(dbconf.auth().verifyIdToken(token, true)){
                 next();
             } else {
                 res.status(403).send({
