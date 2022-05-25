@@ -269,38 +269,46 @@ if registering with registered email
     "error": false,
     "message": "Data successfully fetched",
     "fetchedData": {
-        "id": "KWoaqHDcweHL8X3ez5wn",
-        "name": "Azimatul Kuroma",
-        "NIK": "123456789",
-        "provinsi": "Jawa Timur",
-        "kotaKabupaten": "Blitar",
-        "kecamatan": "Sananwetan",
-        "kelurahan": "Plosokerep",
-        "alamat": "Jl. tangkuban no 199",
-        "noPonsel": "'+6289513275884",
-        "email": "arsfgm3229@gmail.com",
-        "sosmedAcc": "arsza_zim3392",
-        "university": "Universitas Indonesia",
-        "NIM": "2086206077",
-        "jurusan": "Teknik Informatika",
-        "IP": "3.5",
-        "IPK": "3.75",
-        "jumlahBiayaUKT": "1.000.000",
-        "deadlinePembayaran": "7/14/0021",
-        "kebutuhan1": "makan",
-        "biayaKebutuhan1": "1.000.000",
-        "kebutuhan2": "minum",
-        "biayaKebutuhan2": "500.000",
-        "ceritaKondisi": "alhamdulillah masih ada,pekerjaan wiraswasta,kurang biaya kuliah,ada yang sudah putus sekolah",
-        "ceritaSeberapaPenting": "sangat penting untuk biaya perkuliahan setiap semester",
-        "fotoKegiatan": "https://api.typeform.com/responses/files/test/foto_kls.jpg",
-        "fotoRumah": "https://api.typeform.com/responses/files/test/rumah.jpg",
-        "statusKepemilikanRumah": "Milik Sendiri",
-        "buktiIPK": "",
-        "buktiIP": "",
-        "KTM": "https://kemahasiswaan.poltekkes-mks.ac.id/wp-content/uploads/2019/03/kta-2.png",
-        "KTP": "https://1.bp.blogspot.com/-0_alFR0_Xfg/XLT-8mT0uUI/AAAAAAAAAHE/IZ9Qx70u4fok6pVAsXy2l563WuyArz7rwCLcBGAs/s1600/KTP-1544523262.png",
-        "lampiranDokumen": "https://api.typeform.com/responses/files/test/Lampiran_Dokumen_Beasiswa_Narasi_Bantuan_Pendidikan_NEW.pdf"
+        "bioDiri": {
+            "nama": "Fajar Januar Aulia",
+            "provinsi": "Banten",
+            "kotaKabupaten": "Kota Tangerang",
+            "alamat": "Jalan Teluk 2 No. 22 RT 001 RW 008",
+            "NIK": "3682749911000005",
+            "fotoKTP": "https://1.bp.blogspot.com/-0_alFR0_Xfg/XLT-8mT0uUI/AAAAAAAAAHE/IZ9Qx70u4fok6pVAsXy2l563WuyArz7rwCLcBGAs/s1600/KTP-1544523262.png",
+            "fotoDiri": "https://i.pinimg.com/736x/8e/d6/88/8ed688dd8f994687d33e435f0d54501a.jpg",
+            "sosmedAcc": "@akuTampan"
+        },
+        "bioPendidikan": {
+            "tingkatPendidikan": "SMA",
+            "jurusan": "SMA",
+            "NIM": "'12483751000096",
+            "fotoKTM": "https://i.pinimg.com/originals/ab/45/78/ab4578cc55a0052c625904806871337c.jpg",
+            "fotoIPKAtauRapor": "https://indbeasiswa.com/wp-content/uploads/2020/02/contoh-transkrip-nilai-indbeasiswa.jpg"
+        },
+        "pengajuanBantuan": {
+            "kebutuhan": "Biaya pendidikan (UKT, SKS)",
+            "totalBiaya": "6.000.000",
+            "fotoBuktiTunggakan": "https://pbs.twimg.com/media/Ch-ZkqgVIAIMA3K.jpg",
+            "ceritaPenggunaanDana": "dana ini rencananya ingin saya gunakan untuk membayar biaya UKT saya untuk 3 semester",
+            "kepemilikanRumah": "Milik sendiri",
+            "fotoRumah": "https://storage.nu.or.id/storage/post/16_9/mid/15235888635ad01effee493.jpg"
+        },
+        "motivationLater": {
+            "ceritaLatarBelakang": "Di masa pandemi seperti ini, ayah saya mengalami pemotongan gaji hampir lebih dari 50 persen akibat sektor pariwisata tempat ia bekerja, kapal pesiar (sebagai laundry attendant / TKI). Ditambah mayoritas pendapatan ayah saya didapat dari uang tip yang diberikan oleh pelanggannya. Ditambah kondisi ibu saya yang sakit-sakitan akibat stress yang dideritanya karena pandemi yang berkepanjangan ini, cukup menguras tabungan kami sekeluarga. Selain itu, rumah kami yang dimakan rayap juga menambah kekhawatiran kami akan hidup aman, namun apa daya tidak ada yang bisa kami lakukan karena tidak mempunyai uang yang cukup untuk memberesinya, uangnya terpakai untuk biaya pendidikan saya. Hal ini membuat saya berpikir untuk mencari beasiswa ke mana-mana.  Walaupun saya telah berhasil untuk meminta direktorat keuangan dari Universitas untuk menurunkan UKT, dari 8 Juta rupiah menjadi 6 Juta rupiah, tapi tetap hal ini masih memberatkan orang tua saya terutama di masa pandemi seperti ini. Saya harap dengan mendaftar Beasiswa Narasi ini saya dapat meringkankan beban kedua orang tua saya.",
+            "ceritaPerjuangan": "kemi semua sedang berjuang untuk bisa mendapatkan hidup yang lebih baik. sejauh ini yang telah kami lakukan adalah dengan bekerja semampu kami, namun tetap saja tidak semua kebutuhan kami bisa terpenuhi. tak jarang kami harus berhutang untuk bisa memenuhi kebutuhan yang mendesak",
+            "ceritaPentingnyaBeasiswa": "Harapan yang sangat besar untuk lolos menerima beasiswa dari narasi. Optimis walaupun dengan segala keterbatasan, tetapi saya yakin akan keajaiban. Mimpi yang terus saya doakan bisa terwujud. Meringankan beban orang tua saat kuliah merupakan keinginan terbesar saya. Saya ingin membuktikan bahwa faktor ekonomi bukanlah penghalang seseorang untuk meraih mimpinya,banyak inspirator yang membuka pandangan saya akan yakin dalam menggapai cita-cita. Beasiswa merupakan salah satu jalan untuk saya bisa bertahan di perkuliahan. Apalagi saya mendapatkan informasi terkait besasiwa narasi di youtube, tentunya ini menjadi kesempatan bagi saya agar bisa bersemangat lagi dalam berkuliah. Dengan usaha yang maksimal dan doa-doa dari orang tersayang yang menjadi penguat bisa menjadi jalan untuk terwujudnya mimpi,harapan serta cita-cita.",
+            "fotoBuktiKegiatan": "https://infokini.news/wp-content/uploads/2020/10/IMG-20201021-WA0047.jpg"
+        },
+        "statusApplicant": "rejected",
+        "statusData": "accepted",
+        "statusRumah": "onhold",
+        "lampiranTambahan": "-",
+        "lembarPersetujuan": "-",
+        "misc": {
+            "beasiswaTerdaftar": "2MITdua2vK5LlRpfN0jo"
+        },
+        "notes": "applicant belum bisa diterima karena data tidak lengkap"
     }
 }
 ```
