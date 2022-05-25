@@ -52,11 +52,9 @@ route.get('/',auth, (req,res) => {
                         ceritakegiatanYangDigeluti: applicantsDataDetail.motivationLater.ceritakegiatanYangDigeluti,
                         fotoBuktiKegiatan: applicantsDataDetail.motivationLater.fotoBuktiKegiatan
                     },
-                    status: {
-                        applicant: applicantsDataDetail.status.applicant,
-                        dataApplicant: applicantsDataDetail.status.dataApplicant,
-                        dataRumah: applicantsDataDetail.status.dataRumah
-                    },
+                    statusApplicant : applicantsDataDetail.statusApplicant,
+                    statusData: applicantsDataDetail.statusData,
+                    statusRumah: applicantsDataDetail.statusRumah,
                     lampiranTambahan: applicantsDataDetail.lampiranTambahan,
                     lembarPersetujuan: applicantsDataDetail.lembarPersetujuan,
                     misc: {
