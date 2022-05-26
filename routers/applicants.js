@@ -28,12 +28,14 @@ route.get('/',auth, (req,res) => {
                         NIK: applicantsDataDetail.bioDiri.NIK,
                         fotoKTP: applicantsDataDetail.bioDiri.fotoKTP,
                         fotoDiri: applicantsDataDetail.bioDiri.fotoDiri,
-                        sosmedAcc: applicantsDataDetail.bioDiri.sosmedAcc
+                        sosmedAcc: applicantsDataDetail.bioDiri.sosmedAcc,
+                        noTlp: applicantsDataDetail.bioDiri.noTlp
                     },
                     bioPendidikan: {
                         tingkatPendidikan: applicantsDataDetail.bioPendidikan.tingkatPendidikan,
                         jurusan: applicantsDataDetail.bioPendidikan.jurusan,
                         NIM: applicantsDataDetail.bioPendidikan.NIM,
+                        NPSN: applicantsDataDetail.bioPendidikan.NPSN,
                         fotoKTM: applicantsDataDetail.bioPendidikan.fotoKTM,
                         fotoIPKAtauRapor: applicantsDataDetail.bioPendidikan.fotoIPKAtauRapor
                     },
