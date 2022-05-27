@@ -5,6 +5,7 @@ const checkCampaign = require('../midWare/checkCampaign.js');
 const auth = require('../midWare/auth.js');
 const score = require('./getApplicantScore');
 const dotenv = require('dotenv');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
 
 require('dotenv').config();
 
@@ -13,34 +14,141 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData', (req,res) => {
+route.get('/:id/applicants/processData',checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
+    const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
-    let campaignName = '';
+    const idGSheet = '1MPGHiJIpopD9P_mWwU8ku96i5kfKvcNa9nhu3pl65BI';
     let scoreApplicant = '';
 
-    dataUser = {
-        "Provinsi": "Jatim",
-        "Kota/Kabupaten": "Bangkalan",
-        "Medsos": "",
-        "Status Rumah":  "Milik sendiri",
-        "NIK": "3372032503850004",
-        "Foto KTP": "https://i.ibb.co/njtQB1B/09021270-edac-11ea-8edc-1397fd25535355621fe50423bd79138b4567.jpg",
-        "Foto Rumah": "https://api.typeform.com/responses/files/8563dd9df157522a34257765346f5dcc1932cec593d2dd950bf80c1ba4ed9b20/rumah.jpg",
-        "Cerita Penggunaan Dana": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-        "Cerita Latar Belakang": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-        "Cerita Perjuangan": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-        "Beasiswa Penting": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-        "Cerita Kegiatan": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-    }
+    const doc = new GoogleSpreadsheet(idGSheet);
+
+    doc.useServiceAccountAuth({
+        client_email: process.env.GSHEET_CLIENT_EMAIL,
+        private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
+    });
+
+    let processApplicantData = async() => {
+
+        await doc.loadInfo();
+
+        const sheet = doc.sheetsByIndex[0];
+
+        const rows = await sheet.getRows();
+        for(let i = 0; i < rows.length; i++){
+            dataUser = {
+                "Provinsi": rows[i]['Provinsi'],
+                "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
+                "Medsos": rows[i]['Akun Sosial Media'],
+                "Status Rumah":  rows[i]['Kepemilikan Rumah'],
+                "NIK": rows[i]['Nomor KTP (NIK)'],
+                "Foto KTP": rows[i]['Foto KTP'],
+                "Foto Rumah": rows[i]['Foto Rumah Jelas'],
+                "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
+                "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+                "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+                "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+                "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+            }
     
-    let getApplicantScore = async() => {
-        scoreApplicant = await score(dataUser)
+            //sending the data to flask server
+            scoreApplicant = await score(dataUser)
+
+            //prepare the data to be sent to DB
+            const dataInputUser = {
+                bioDiri: { 
+                    NIK: rows[i]['Nomor KTP (NIK)'],
+                    alamat: rows[i]['Alamat Lengkap'],
+                    fotoDiri: rows[i]['Foto Diri'],
+                    fotoKTP: rows[i]['Foto KTP'],
+                    kotaKabupaten: rows[i]['Kabupaten / Kota'],
+                    namaLengkap: rows[i]['Nama lengkap'],
+                    noTlp: 'Belum ada di dummy om datanya',
+                    provinsi: rows[i]['Provinsi'],
+                    sosmedAcc: rows[i]['Akun Sosial Media']
+                },
+                bioPendidikan: {
+                    NIM: rows[i]['Nomor Identitas Kampus/Sekolah'],
+                    NPSN: 'Belum ada di dummy om datanya',
+                    fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
+                    fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
+                    jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
+                    tingkatPendidikan: rows[i]['Tingkat Pendidikan']
+                },
+                lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
+                lampiranPersetujuan: 'Belum ada di dummy om datanya',
+                misc: {
+                    beasiswaTerdaftar: idCampaign
+                },
+                motivationLetter: {
+                    ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+                    ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+                    ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+                    ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+                    fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
+                },
+                notes: "",
+                pengajuanBantuan: {
+                    ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
+                    fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
+                    fotoRumah: rows[i]['Foto Rumah Jelas'],
+                    kebutuhan: rows[i]['Kebutuhan'], 
+                    kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
+                    totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
+                },
+                reviewer: "",
+                statusApplicant: "",
+                statusData: "Belum diprovide sama ML bang datanya",
+                statusRumah: "Belum diprovide sama ML bang datanya",
+                scoreApplicant: scoreApplicant
+            }
+
+            //adding the data from a row to database
+            var docRef = applicantRef.doc();
+            docRef.set(dataInputUser).then(
+                campaignRef.doc(idCampaign).get().then((data) => {
+                    const listApplicants = data.data().applicants
+                    listApplicants.push(docRef.id)
+                    campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                })
+            )
+        }
     }
 
-    getApplicantScore()
+    const updateCampaignProcess = async() => {
+        await processApplicantData()
+        campaignRef.doc(idCampaign).update({process: "1"})
+        res.status(200).send({
+            error: false,
+            message: "All data has already fetched"
+        })
+    }
 
-    
+    //checking if the process for a campaign has already done
+    campaignRef.doc(idCampaign).get().then((data) => {
+        try{
+            if(data.data().process === "0"){
+                updateCampaignProcess();
+            } else if(data.data().process === "1"){
+                res.status(200).send({
+                    error: false,
+                    message: "The data for this campaign has already processed"
+                })
+            } else {
+                res.status(500).send({
+                    error: true,
+                    message: "Unknown process status"
+                })
+            }
+        } catch (e) {
+            res.status(500).send({
+                error: true,
+                message: "Internal server error"
+            })
+        }
+    })
+
+
 })
 
 //API to get all available campaigns

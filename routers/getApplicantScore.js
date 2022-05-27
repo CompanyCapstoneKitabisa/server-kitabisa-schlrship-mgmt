@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 
 require('dotenv').config();
 
-async function score(dataRecieved) {
+const score = async(dataRecieved) => {
     //Send to flask all data needed for prediction
     let data = await axios.post(process.env.ADDRESS_ML, {
          headers: {

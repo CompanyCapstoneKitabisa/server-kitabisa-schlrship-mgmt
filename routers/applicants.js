@@ -47,12 +47,12 @@ route.get('/',auth, (req,res) => {
                         kepemilikanRumah: applicantsDataDetail.pengajuanBantuan.kepemilikanRumah,
                         fotoRumah: applicantsDataDetail.pengajuanBantuan.fotoRumah
                     },
-                    motivationLatter: {
-                        ceritaLatarBelakang: applicantsDataDetail.motivationLater.ceritaLatarBelakang,
-                        ceritaPerjuangan: applicantsDataDetail.motivationLater.ceritaPerjuangan,
-                        ceritaPentingnyaBeasiswa: applicantsDataDetail.motivationLater.ceritaPentingnyaBeasiswa,
-                        ceritakegiatanYangDigeluti: applicantsDataDetail.motivationLater.ceritaKegiatanYangDigeluti,
-                        fotoBuktiKegiatan: applicantsDataDetail.motivationLater.fotoBuktiKegiatan
+                    motivationLetter: {
+                        ceritaLatarBelakang: applicantsDataDetail.motivationLetter.ceritaLatarBelakang,
+                        ceritaPerjuangan: applicantsDataDetail.motivationLetter.ceritaPerjuangan,
+                        ceritaPentingnyaBeasiswa: applicantsDataDetail.motivationLetter.ceritaPentingnyaBeasiswa,
+                        ceritakegiatanYangDigeluti: applicantsDataDetail.motivationLetter.ceritaKegiatanYangDigeluti,
+                        fotoBuktiKegiatan: applicantsDataDetail.motivationLetter.fotoBuktiKegiatan
                     },
                     statusApplicant : applicantsDataDetail.statusApplicant,
                     statusData: applicantsDataDetail.statusData,
