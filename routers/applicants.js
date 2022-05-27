@@ -85,11 +85,11 @@ route.get('/',auth, (req,res) => {
 })
 
 //update specific applicant status
-route.post('/:id/updateStatus', auth, (req,res) => {
+route.post('/:id/update', auth, (req,res) => {
     const id = req.params.id
 
     const statusApplicant =  req.body.status
-
+    const notes = req.body.notes
     const dataReviewer = req.body.reviewer
 
     let lower_statusApplicant = '';
@@ -115,7 +115,7 @@ route.post('/:id/updateStatus', auth, (req,res) => {
                     if(statusApplicant !== undefined){
                         lower_statusApplicant = statusApplicant.toLowerCase()
                         if(lower_statusApplicant === 'rejected' || lower_statusApplicant === 'accepted' || lower_statusApplicant === "pending" || lower_statusApplicant === "onhold"){
-                            applicantsRef.doc(id).update({statusApplicant: lower_statusApplicant})
+                            applicantsRef.doc(id).update({statusApplicant: lower_statusApplicant, notes: notes})
                             finalReportSA = 'Data Updated';
                         }else{
                             finalReportSA ="Failed to update, wrong input data";
@@ -157,33 +157,6 @@ route.get('/:id/notes', auth, (req,res) => {
                         notes: data.data().notes
                     }
                 })
-            }
-        })
-    } catch (e) {
-        res.status(500).send({
-            message: "Internal server error",
-            error: e
-        })
-    }
-})
-
-route.post('/:id/notes',auth, (req,res) => {
-    const id = req.params.id;
-    const new_notes = req.body.notes;
-    const applicantsRef = db.collection('applicants');
-
-    try{
-        applicantsRef.doc(id).get().then((data) => {
-            if(data.data() === undefined){
-                res.status(200).send({
-                    message: `Can't found applicant with id ${id}` 
-                })
-            } else{
-                applicantsRef.doc(id).update({notes: new_notes}).then(
-                    res.status(200).send({
-                        message: "Notes updated"
-                    })
-                )
             }
         })
     } catch (e) {
