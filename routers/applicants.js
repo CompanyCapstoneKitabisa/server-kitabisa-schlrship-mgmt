@@ -47,11 +47,11 @@ route.get('/',auth, (req,res) => {
                         kepemilikanRumah: applicantsDataDetail.pengajuanBantuan.kepemilikanRumah,
                         fotoRumah: applicantsDataDetail.pengajuanBantuan.fotoRumah
                     },
-                    motivationLater: {
+                    motivationLatter: {
                         ceritaLatarBelakang: applicantsDataDetail.motivationLater.ceritaLatarBelakang,
                         ceritaPerjuangan: applicantsDataDetail.motivationLater.ceritaPerjuangan,
                         ceritaPentingnyaBeasiswa: applicantsDataDetail.motivationLater.ceritaPentingnyaBeasiswa,
-                        ceritakegiatanYangDigeluti: applicantsDataDetail.motivationLater.ceritakegiatanYangDigeluti,
+                        ceritakegiatanYangDigeluti: applicantsDataDetail.motivationLater.ceritaKegiatanYangDigeluti,
                         fotoBuktiKegiatan: applicantsDataDetail.motivationLater.fotoBuktiKegiatan
                     },
                     statusApplicant : applicantsDataDetail.statusApplicant,
@@ -62,6 +62,7 @@ route.get('/',auth, (req,res) => {
                     misc: {
                         beasiswaTerdaftar: applicantsDataDetail.misc.beasiswaTerdaftar
                     },
+                    reviewer: applicantsDataDetail.reviewer,
                     notes: applicantsDataDetail.notes
                 }
             }
@@ -87,68 +88,50 @@ route.get('/',auth, (req,res) => {
 route.post('/:id/updateStatus', auth, (req,res) => {
     const id = req.params.id
 
-    const statusApplicant =  req.body.statusApplicant
-    const statusData = req.body.statusData
-    const statusRumah = req.body.statusRumah
+    const statusApplicant =  req.body.status
+
+    const dataReviewer = req.body.reviewer
 
     let lower_statusApplicant = '';
-    let lower_statusRumah = '';
-    let lower_statusData = '';
 
     let finalReportSA = 'Data not updated. No input for this data';
-    let finalReportSD = 'Data not updated. No input for this data';
-    let finalReportR = 'Data not updated. No input for this data';
 
     const applicantsRef = db.collection('applicants')
 
     try{
-        applicantsRef.doc(id).get().then((data) => {
-            if(data.data() === undefined){
-                res.status(200).send({
-                    error: "true",
-                    message: "Could not update status, applicant not found"
-                })
-            }else{
-                if(statusApplicant !== undefined){
-                    lower_statusApplicant = statusApplicant.toLowerCase()
-                    if(lower_statusApplicant === 'rejected' || lower_statusApplicant === 'accepted' || lower_statusApplicant === "pending" || lower_statusApplicant === "onhold"){
-                        applicantsRef.doc(id).update({statusApplicant: lower_statusApplicant})
-                        finalReportSA = 'Data Updated';
-                    }else{
-                        finalReportSA ="Failed to update, wrong input data";
-                    }
-                }
-
-                if(statusData !== undefined){
-                    lower_statusData = statusData.toLowerCase()
-                    if(lower_statusData === 'rejected' || lower_statusData === 'accepted' || lower_statusData === "pending" || lower_statusData === "onhold"){
-                        applicantsRef.doc(id).update({statusData: lower_statusData})
-                        finalReportSD = 'Data Updated';
-                    }else{
-                        finalReportSD ="Failed to update, wrong input data";
-                    }
-                }
-
-                if(statusRumah !== undefined){
-                    lower_statusRumah = statusRumah.toLowerCase()
-                    if(lower_statusRumah === 'rejected' || lower_statusRumah === 'accepted' || lower_statusRumah === "pending" || lower_statusRumah === "onhold"){
-                        applicantsRef.doc(id).update({statusRumah: lower_statusRumah})
-                        finalReportR = 'Data Updated';
-                    }else{
-                        finalReportR = "Failed to update, wrong input data";
-                    }
-                }
-            }
-
+        if(dataReviewer === undefined || dataReviewer === ""){
             res.status(200).send({
-                error: false,
-                message: {
-                    statusApplicant: finalReportSA,
-                    statusData: finalReportSD,
-                    statusRumah: finalReportR
-                }
+                error: true,
+                message: "Failed to update, can't get reviewer"
             })
-        })
+        } else {
+            applicantsRef.doc(id).get().then((data) => {
+                if(data.data() === undefined){
+                    res.status(200).send({
+                        error: "true",
+                        message: "Could not update status, applicant not found"
+                    })
+                }else{
+                    if(statusApplicant !== undefined){
+                        lower_statusApplicant = statusApplicant.toLowerCase()
+                        if(lower_statusApplicant === 'rejected' || lower_statusApplicant === 'accepted' || lower_statusApplicant === "pending" || lower_statusApplicant === "onhold"){
+                            applicantsRef.doc(id).update({statusApplicant: lower_statusApplicant})
+                            finalReportSA = 'Data Updated';
+                        }else{
+                            finalReportSA ="Failed to update, wrong input data";
+                        }
+                    }
+                    applicantsRef.doc(id).update({reviewer: dataReviewer})
+                }
+    
+                res.status(200).send({
+                    error: false,
+                    message: {
+                        statusApplicant: finalReportSA,
+                    }
+                })
+            })
+        }
     } catch (e) {
         res.status(500).send({
             message: "Internal server error"

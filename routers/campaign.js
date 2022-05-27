@@ -3,7 +3,10 @@ const admin = require('firebase-admin');
 const dbconf = require('../config/firebase conf.js');
 const checkCampaign = require('../midWare/checkCampaign.js');
 const auth = require('../midWare/auth.js');
-const axios = require('axios');
+const score = require('./getApplicantScore');
+const dotenv = require('dotenv');
+
+require('dotenv').config();
 
 const route = express();
 
@@ -14,38 +17,30 @@ route.get('/:id/applicants/processData', (req,res) => {
     const campaignRef = db.collection('campaigns');
     const idCampaign = req.params.id;
     let campaignName = '';
+    let scoreApplicant = '';
 
-    //Get campaign name
-    campaignRef.doc(idCampaign).get().then((data) => {
-        campaignName = data.data().name
+    dataUser = {
+        "Provinsi": "Jatim",
+        "Kota/Kabupaten": "Bangkalan",
+        "Medsos": "",
+        "Status Rumah":  "Milik sendiri",
+        "NIK": "3372032503850004",
+        "Foto KTP": "https://i.ibb.co/njtQB1B/09021270-edac-11ea-8edc-1397fd25535355621fe50423bd79138b4567.jpg",
+        "Foto Rumah": "https://api.typeform.com/responses/files/8563dd9df157522a34257765346f5dcc1932cec593d2dd950bf80c1ba4ed9b20/rumah.jpg",
+        "Cerita Penggunaan Dana": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
+        "Cerita Latar Belakang": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
+        "Cerita Perjuangan": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
+        "Beasiswa Penting": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
+        "Cerita Kegiatan": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
+    }
+    
+    let getApplicantScore = async() => {
+        scoreApplicant = await score(dataUser)
+    }
 
-        //Send to flask all data needed for prediction
-        axios.post("http://localhost:5000/", {
-            headers: {
-                "Content-Type": "application/json" 
-            },
-            data: {
-                "Provinsi": "Jatim",
-                "Kota/Kabupaten": "Bangkalan",
-                "Medsos": "",
-                "Status Rumah":  "Milik sendiri",
-                "NIK": "3372032503850004",
-                "Foto KTP": "https://i.ibb.co/njtQB1B/09021270-edac-11ea-8edc-1397fd25535355621fe50423bd79138b4567.jpg",
-                "Foto Rumah": "https://api.typeform.com/responses/files/8563dd9df157522a34257765346f5dcc1932cec593d2dd950bf80c1ba4ed9b20/rumah.jpg",
-                "Cerita Penggunaan Dana": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-                "Cerita Latar Belakang": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-                "Cerita Perjuangan": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-                "Beasiswa Penting": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-                "Cerita Kegiatan": "Pekerjaan bapak saya hanya seorang marbot masjid di beri upah 500.000 tiap bulan nya, menjadi seorang guru ngaji hanya di beri gaji 500.000 pula setiap tahun nya, ibu saya hanya seorang ibu rumah tangga yang tidak bekerja. Saya 5 bersaudara, kakak saya Autis yang membutuhkan biaya lebih, saya kuliah di UINSA dengan biaya UKT 3.800.000 setiap semesternya, sekarang saya berada di pesantren putri An najiyah surabaya sedang menyelesaikan hafalan Al-Qur'an saya. Sehari hari pergi kuliah saya hanya menggoes sepeda dengan jarak 15 KM. Adik saya yang 2 sedang bersekolah SD dan yang satu lagi TK. Dengan biaya yang sangat banyak tersebut saya terancam semester depan cuti atau mungkin akan menghentikan kuliah saya. Karena sudah banyak sekali hutang sana sini yang bapak saya lakukan untuk membayar UKT saya. saya sangat berharap terhadap beasiswa ini. karena saya sudah mengajukan berbagai beasiswa namun tidak ada yang lolos satupun.entah akan seperti apa kehidupan pendidikan saya maupun adik saya selanjutnya orang tuasaya hanya berharap besar terhadap saya. Terimakasih.",
-            }
-        }) //getting the response from flask
-        .then((response) => {
-            console.log(response.data)
-        })
-        .catch((error) => {
-            console.log(error)
-        })
-    })
+    getApplicantScore()
+
+    
 })
 
 //API to get all available campaigns
