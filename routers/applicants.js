@@ -139,32 +139,4 @@ route.post('/:id/update', auth, (req,res) => {
     }
 })
 
-route.get('/:id/notes', auth, (req,res) => {
-    const id = req.params.id;
-    const applicantsRef = db.collection('applicants');
-
-    try{
-        applicantsRef.doc(id).get().then((data) => {
-            if(data.data() === undefined){
-                res.status(200).send({
-                    message: `Can't found applicant with id ${id}`
-                })
-            } else{
-                res.status(200).send({
-                    message: "Data fetched",
-                    data: {
-                        name: data.data().name,
-                        notes: data.data().notes
-                    }
-                })
-            }
-        })
-    } catch (e) {
-        res.status(500).send({
-            message: "Internal server error",
-            error: e
-        })
-    }
-})
-
 module.exports = route
