@@ -304,6 +304,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                             photoURL: userDataDetails.bioDiri.fotoDiri,
                             name: userDataDetails.bioDiri.namaLengkap,
                             provinsi: userDataDetails.bioDiri.provinsi,
+                            kota: userDataDetails.bioDiri.kotaKabupaten,
                             university: userDataDetails.bioPendidikan.NPSN,
                             score: userDataDetails.scoreApplicant,
                             statusApplicant: userDataDetails.statusApplicant,
