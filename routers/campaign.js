@@ -247,7 +247,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                             applicantsNumber++
                         }else if(userDataDetails.statusApplicant === 'onhold'){
                             counterOnHold++
-                            applicantNumber++
+                            applicantsNumber++
                         }
                         
                         counter++
