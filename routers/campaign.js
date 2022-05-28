@@ -14,7 +14,7 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData',checkCampaign, (req,res) => {
+route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
@@ -199,6 +199,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
     let listApplicants = [];
     let counterRejected = 0;
     let counterAccepted = 0;
+    let counterOnHold = 0;
     let applicantsNumber = 0;
     let counter = 0;
 
@@ -215,7 +216,8 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                     photoUrl: campaignData.photoUrl,
                     applicantsCount: 0,
                     acceptedApplicants: 0,
-                    rejectedApplicants: 0
+                    rejectedApplicants: 0,
+                    onHoldApplicants: 0
                 }
                 res.status(200).send({
                     error: false,
@@ -243,6 +245,9 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                         }else if(userDataDetails.statusApplicant === 'accepted'){
                             counterAccepted++
                             applicantsNumber++
+                        }else if(userDataDetails.statusApplicant === 'onhold'){
+                            counterOnHold++
+                            applicantNumber++
                         }
                         
                         counter++
@@ -255,7 +260,8 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                                 photoUrl: campaignData.photoUrl,
                                 applicantsCount: applicantsNumber,
                                 acceptedApplicants: counterAccepted,
-                                rejectedApplicants: counterRejected
+                                rejectedApplicants: counterRejected,
+                                onHoldApplicants: counterOnHold
                             }
     
                             res.status(200).send({
@@ -295,11 +301,14 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                 
                         const dataSend = {
                             id: userData.id,
+                            photoURL: userDataDetails.bioDiri.fotoDiri,
                             name: userDataDetails.bioDiri.namaLengkap,
-                            university: userDataDetails.university,
-                            rank: userDataDetails.rank,
-                            rating: userDataDetails.rating,
-                            status: userDataDetails.statusApplicant
+                            provinsi: userDataDetails.bioDiri.provinsi,
+                            university: userDataDetails.bioPendidikan.NPSN,
+                            score: userDataDetails.scoreApplicant,
+                            statusApplicant: userDataDetails.statusApplicant,
+                            statusData: userDataDetails.statusData,
+                            statusRumah: userDataDetails.statusRumah
                             }  
         
                             counter++
