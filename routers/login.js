@@ -1,6 +1,6 @@
 const express = require('express');
 const admin = require('firebase-admin');
-const dbconf = require('./firebase conf.js');
+const dbconf = require('../config/firebase conf.js');
 const bcrypt = require('bcrypt');
 
 const route = express();

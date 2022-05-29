@@ -1,13 +1,14 @@
 const express = require('express');
 const admin = require('firebase-admin');
-const dbconf = require('./firebase conf.js');
+const dbconf = require('../config/firebase conf.js');
 const bcrypt = require('bcrypt');
+const auth = require('../midWare/auth.js');
 
 const route = express();
 var db = dbconf.firestore();
 
 //endpoint to get specific user using their id
-route.get('/', (req,res) => {
+route.get('/',auth, (req,res) => {
     var usersRef = db.collection('users');
     let dataUser = {};
     let success = 0;
@@ -68,7 +69,7 @@ route.post('/', (req,res) => {
             })
         if(success === 1){
             db.collection('users').add(userData);
-            res.status(200).send({message: 'User berhasil ditambahkan'});
+            res.status(201).send({message: 'User berhasil ditambahkan'});
         }else if(success === 0){
             res.status(500).send({message: 'Gagal mendaftar. email sudah terdaftar'})
         }
