@@ -118,9 +118,9 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     const updateCampaignProcess = async() => {
         await processApplicantData()
         campaignRef.doc(idCampaign).update({process: "1"})
-        res.status(200).send({
+        res.status(201).send({
             error: false,
-            message: "All data has already fetched"
+            message: "All data has already fetched and created"
         })
     }
 
@@ -187,6 +187,39 @@ route.get('/',auth, (req,res) => {
     } catch (e) {
         res.status(500).send({
             message: "Internal server error, failed to fetch data"
+        })
+    }
+})
+
+//API to post new campaign
+route.post('/', (req,res) => {
+    campaignRef = db.collection('campaigns')
+
+    namaBeasiswa = req.body.namaBeasiswa
+    penggalangDana = req.body.penggalangDana
+    SnK = req.body.SnK
+    photoURL = req.body.photoURL
+
+    if(namaBeasiswa === undefined || namaBeasiswa === "" || penggalangDana === undefined || penggalangDana === "" || SnK === undefined || SnK === "" || photoURL === undefined || photoURL === ""){
+        res.status(409).send({
+            error: true,
+            message: "Can't add campaign because data sent isn't complete"
+        })
+    }else {
+        sendData = {
+            name: namaBeasiswa,
+            penggalangDana: penggalangDana,
+            photoURL: photoURL,
+            process: "0",
+            SnK,
+            applicants: []
+        }
+    
+        campaignRef.doc().set(sendData)
+    
+        res.status(201).send({
+            error: false,
+            message: "Campaign added"
         })
     }
 })
@@ -276,7 +309,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
             })
         })
     }catch(e){
-        res.status(500).seng({
+        res.status(500).send({
             message: "Internal server error"
         })
     }

@@ -77,7 +77,7 @@ route.get('/',auth, (req,res) => {
         } else if(success === 0){
             res.status(200).send({
                 error: false,
-                message: "Data not found"
+                message: "Can't find applicant. Not found"
             })
         }
     })
@@ -100,15 +100,15 @@ route.post('/:id/update', auth, (req,res) => {
 
     try{
         if(dataReviewer === undefined || dataReviewer === ""){
-            res.status(200).send({
+            res.status(409).send({
                 error: true,
                 message: "Failed to update, can't get reviewer"
             })
         } else {
             applicantsRef.doc(id).get().then((data) => {
                 if(data.data() === undefined){
-                    res.status(200).send({
-                        error: "true",
+                    res.status(404).send({
+                        error: true,
                         message: "Could not update status, applicant not found"
                     })
                 }else{

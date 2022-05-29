@@ -69,7 +69,7 @@ route.post('/', (req,res) => {
             })
         if(success === 1){
             db.collection('users').add(userData);
-            res.status(200).send({message: 'User berhasil ditambahkan'});
+            res.status(201).send({message: 'User berhasil ditambahkan'});
         }else if(success === 0){
             res.status(500).send({message: 'Gagal mendaftar. email sudah terdaftar'})
         }
