@@ -27,16 +27,16 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
         })
     }
 
-    const idGSheet = await getIDSheet;
-
-    const doc = new GoogleSpreadsheet(idGSheet);
-
-    doc.useServiceAccountAuth({
-        client_email: process.env.GSHEET_CLIENT_EMAIL,
-        private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
-    });
-
     let processApplicantData = async() => {
+
+        const idGSheet = await getIDSheet;
+
+        const doc = new GoogleSpreadsheet(idGSheet);
+
+        doc.useServiceAccountAuth({
+            client_email: process.env.GSHEET_CLIENT_EMAIL,
+            private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
+        });
 
         await doc.loadInfo();
 
