@@ -209,7 +209,7 @@ route.post('/', auth, (req,res) => {
     photoUrl = req.body.photoUrl
     idgsheet = req.body.idGSheet
 
-    if(namaBeasiswa === undefined || namaBeasiswa === "" || penggalangDana === undefined || penggalangDana === "" || SnK === undefined || SnK === "" || photoURL === undefined || photoURL === "" || idgsheet === undefined || idgsheet === ""){
+    if(namaBeasiswa === undefined || namaBeasiswa === "" || penggalangDana === undefined || penggalangDana === "" || SnK === undefined || SnK === "" || photoUrl === undefined || photoUrl === "" || idgsheet === undefined || idgsheet === ""){
         res.status(409).send({
             error: true,
             message: "Can't add campaign because data sent isn't complete"
