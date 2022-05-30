@@ -140,9 +140,10 @@ if registering with registered email
     - POST
 - Request parameter
     - namaBeasiswa as string
-    - penggalanDana as string
+    - penggalangDana as string
     - SnK as string
-    - photoURL as string
+    - photoUrl as string
+    - idGSheet as string
 - Response
 if all 4 parameter available
 ```
