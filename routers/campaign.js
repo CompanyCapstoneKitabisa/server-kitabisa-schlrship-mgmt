@@ -18,8 +18,16 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
-    const idGSheet = '1MPGHiJIpopD9P_mWwU8ku96i5kfKvcNa9nhu3pl65BI';
     let scoreApplicant = '';
+
+    //getting the sheetID
+    const getIDSheet = async() => {
+            campaignRef.doc(idCampaign).get().then((data) => {
+            return data.data().idGSheet
+        })
+    }
+
+    const idGSheet = await getIDSheet;
 
     const doc = new GoogleSpreadsheet(idGSheet);
 
@@ -198,7 +206,7 @@ route.post('/', auth, (req,res) => {
     namaBeasiswa = req.body.namaBeasiswa
     penggalangDana = req.body.penggalangDana
     SnK = req.body.SnK
-    photoUrl = req.body.photoURL
+    photoUrl = req.body.photoUrl
     idgsheet = req.body.idGSheet
 
     if(namaBeasiswa === undefined || namaBeasiswa === "" || penggalangDana === undefined || penggalangDana === "" || SnK === undefined || SnK === "" || photoURL === undefined || photoURL === "" || idgsheet === undefined || idgsheet === ""){
