@@ -199,8 +199,9 @@ route.post('/', auth, (req,res) => {
     penggalangDana = req.body.penggalangDana
     SnK = req.body.SnK
     photoUrl = req.body.photoURL
+    idgsheet = req.body.idGSheet
 
-    if(namaBeasiswa === undefined || namaBeasiswa === "" || penggalangDana === undefined || penggalangDana === "" || SnK === undefined || SnK === "" || photoURL === undefined || photoURL === ""){
+    if(namaBeasiswa === undefined || namaBeasiswa === "" || penggalangDana === undefined || penggalangDana === "" || SnK === undefined || SnK === "" || photoURL === undefined || photoURL === "" || idgsheet === undefined || idgsheet === ""){
         res.status(409).send({
             error: true,
             message: "Can't add campaign because data sent isn't complete"
@@ -212,7 +213,8 @@ route.post('/', auth, (req,res) => {
             photoUrl,
             process: "0",
             SnK,
-            applicants: []
+            applicants: [],
+            idGSheet: idgsheet
         }
     
         campaignRef.doc().set(sendData)
