@@ -164,7 +164,7 @@ route.get('/',auth, (req,res) => {
                     id: campaignData.id,
                     name: campaignDataDetails.name,
                     penggalangDana: campaignDataDetails.penggalangDana,
-                    photoUrl: campaignDataDetails.photoUrl,
+                    photoURL: campaignDataDetails.photoURL,
                     SnK: campaignDataDetails.SnK
                 }
 
