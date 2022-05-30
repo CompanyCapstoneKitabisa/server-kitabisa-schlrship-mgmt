@@ -63,20 +63,20 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                     fotoKTP: rows[i]['Foto KTP'],
                     kotaKabupaten: rows[i]['Kabupaten / Kota'],
                     namaLengkap: rows[i]['Nama lengkap'],
-                    noTlp: 'Belum ada di dummy om datanya',
+                    noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
                     provinsi: rows[i]['Provinsi'],
                     sosmedAcc: rows[i]['Akun Sosial Media']
                 },
                 bioPendidikan: {
-                    NIM: rows[i]['Nomor Identitas Kampus/Sekolah'],
-                    NPSN: 'Belum ada di dummy om datanya',
+                    NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
+                    NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
                     fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
                     fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
                     jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
                     tingkatPendidikan: rows[i]['Tingkat Pendidikan']
                 },
                 lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
-                lampiranPersetujuan: 'Belum ada di dummy om datanya',
+                lampiranPersetujuan: "-",
                 misc: {
                     beasiswaTerdaftar: idCampaign
                 },
@@ -98,9 +98,9 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                 },
                 reviewer: "",
                 statusApplicant: "",
-                statusData: "Belum diprovide sama ML bang datanya",
-                statusRumah: "Belum diprovide sama ML bang datanya",
-                scoreApplicant: scoreApplicant
+                statusData: scoreApplicant.statusData,
+                statusRumah: scoreApplicant.statusRumah,
+                scoreApplicant: scoreApplicant.total
             }
 
             //adding the data from a row to database
@@ -192,7 +192,7 @@ route.get('/',auth, (req,res) => {
 })
 
 //API to post new campaign
-route.post('/', (req,res) => {
+route.post('/', auth, (req,res) => {
     campaignRef = db.collection('campaigns')
 
     namaBeasiswa = req.body.namaBeasiswa
@@ -234,6 +234,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
     let counterAccepted = 0;
     let counterOnHold = 0;
     let applicantsNumber = 0;
+    let counterPending = 0;
     let counter = 0;
 
     try{
@@ -250,7 +251,8 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                     applicantsCount: 0,
                     acceptedApplicants: 0,
                     rejectedApplicants: 0,
-                    onHoldApplicants: 0
+                    onHoldApplicants: 0,
+                    pendingApplicants: 0
                 }
                 res.status(200).send({
                     error: false,
@@ -281,6 +283,9 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                         }else if(userDataDetails.statusApplicant === 'onhold'){
                             counterOnHold++
                             applicantsNumber++
+                        } else if(userDataDetails.statusApplicant === ""){
+                            counterPending++
+                            applicantsNumber++
                         }
                         
                         counter++
@@ -294,7 +299,8 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                                 applicantsCount: applicantsNumber,
                                 acceptedApplicants: counterAccepted,
                                 rejectedApplicants: counterRejected,
-                                onHoldApplicants: counterOnHold
+                                onHoldApplicants: counterOnHold,
+                                pendingApplicants: counterPending
                             }
     
                             res.status(200).send({
