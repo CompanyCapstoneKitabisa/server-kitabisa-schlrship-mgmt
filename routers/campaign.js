@@ -14,7 +14,7 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
+route.get('/:id/applicants/processData', checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
