@@ -14,7 +14,6 @@ function check (req,res,next){
                     available = 1
                 }
            })
-
            if(available === 1){
                next();
            }else if(available === 0){
