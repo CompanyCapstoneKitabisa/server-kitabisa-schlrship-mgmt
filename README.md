@@ -142,7 +142,7 @@ if registering with registered email
     - namaBeasiswa as string
     - penggalangDana as string
     - SnK as string
-    - photoURL as string
+    - photoUrl as string
     - idGSheet as string
 - Response
 if all 4 parameter available
