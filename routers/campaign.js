@@ -164,7 +164,7 @@ route.get('/',auth, (req,res) => {
                     id: campaignData.id,
                     name: campaignDataDetails.name,
                     penggalangDana: campaignDataDetails.penggalangDana,
-                    photoURL: campaignDataDetails.photoURL,
+                    photoUrl: campaignDataDetails.photoUrl,
                     SnK: campaignDataDetails.SnK
                 }
 
@@ -198,7 +198,7 @@ route.post('/', auth, (req,res) => {
     namaBeasiswa = req.body.namaBeasiswa
     penggalangDana = req.body.penggalangDana
     SnK = req.body.SnK
-    photoURL = req.body.photoURL
+    photoUrl = req.body.photoURL
 
     if(namaBeasiswa === undefined || namaBeasiswa === "" || penggalangDana === undefined || penggalangDana === "" || SnK === undefined || SnK === "" || photoURL === undefined || photoURL === ""){
         res.status(409).send({
@@ -209,7 +209,7 @@ route.post('/', auth, (req,res) => {
         sendData = {
             name: namaBeasiswa,
             penggalangDana: penggalangDana,
-            photoURL: photoURL,
+            photoUrl,
             process: "0",
             SnK,
             applicants: []
