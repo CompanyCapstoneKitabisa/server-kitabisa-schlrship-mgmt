@@ -14,152 +14,178 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
-    const campaignRef = db.collection('campaigns');
-    const applicantRef = db.collection('applicants');
-    const idCampaign = req.params.id;
-    let idGSheet = '';
-    let scoreApplicant = '';
+// route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
+//     const campaignRef = db.collection('campaigns');
+//     const applicantRef = db.collection('applicants');
+//     const idCampaign = req.params.id;
+//     let idGSheet = '';
+//     let scoreApplicant = '';
 
-    let processApplicantData = async() => {
-        await campaignRef.doc(idCampaign).get().then((data) => {
-            idGSheet = data.data().idGSheet
-        })
+//     let processApplicantData = async() => {
+//         await campaignRef.doc(idCampaign).get().then((data) => {
+//             idGSheet = data.data().idGSheet
+//         })
 
-        const doc = new GoogleSpreadsheet(idGSheet);
+//         const doc = new GoogleSpreadsheet(idGSheet);
 
-        doc.useServiceAccountAuth({
-            client_email: process.env.GSHEET_CLIENT_EMAIL,
-            private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
-        });
+//         doc.useServiceAccountAuth({
+//             client_email: process.env.GSHEET_CLIENT_EMAIL,
+//             private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
+//         });
 
-        await doc.loadInfo()
+//         await doc.loadInfo()
 
-        const sheet = doc.sheetsByIndex[0];
+//         const sheet = doc.sheetsByIndex[0];
         
-        const rows = await sheet.getRows();
-        for(let i = 0; i < rows.length; i++){
-            dataUser = {
-                "Provinsi": rows[i]['Provinsi'],
-                "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
-                "Medsos": rows[i]['Akun Sosial Media'],
-                "Status Rumah":  rows[i]['Kepemilikan Rumah'],
-                "NIK": rows[i]['Nomor KTP (NIK)'],
-                "Foto KTP": rows[i]['Foto KTP'],
-                "Foto Rumah": rows[i]['Foto Rumah Jelas'],
-                "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
-                "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
-            }
+//         const rows = await sheet.getRows();
+//         for(let i = 0; i < rows.length; i++){
+//             dataUser = {
+//                 "Provinsi": rows[i]['Provinsi'],
+//                 "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
+//                 "Medsos": rows[i]['Akun Sosial Media'],
+//                 "Status Rumah":  rows[i]['Kepemilikan Rumah'],
+//                 "NIK": rows[i]['Nomor KTP (NIK)'],
+//                 "Foto KTP": rows[i]['Foto KTP'],
+//                 "Foto Rumah": rows[i]['Foto Rumah Jelas'],
+//                 "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
+//                 "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+//                 "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+//                 "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+//                 "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+//             }
     
-            //sending the data to flask server
-            scoreApplicant = await score(dataUser)
+//             //sending the data to flask server
+//             scoreApplicant = await score(dataUser)
 
-            //prepare the data to be sent to DB
-            const dataInputUser = {
-                bioDiri: { 
-                    NIK: rows[i]['Nomor KTP (NIK)'],
-                    alamat: rows[i]['Alamat Lengkap'],
-                    fotoDiri: rows[i]['Foto Diri'],
-                    fotoKTP: rows[i]['Foto KTP'],
-                    kotaKabupaten: rows[i]['Kabupaten / Kota'],
-                    namaLengkap: rows[i]['Nama lengkap'],
-                    noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
-                    provinsi: rows[i]['Provinsi'],
-                    sosmedAcc: rows[i]['Akun Sosial Media']
-                },
-                bioPendidikan: {
-                    NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
-                    NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
-                    fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
-                    fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
-                    jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
-                    tingkatPendidikan: rows[i]['Tingkat Pendidikan']
-                },
-                lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
-                lampiranPersetujuan: "-",
-                misc: {
-                    beasiswaTerdaftar: idCampaign
-                },
-                motivationLetter: {
-                    ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
-                    ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                    ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                    ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                    fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
-                },
-                notes: "",
-                pengajuanBantuan: {
-                    ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
-                    fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
-                    fotoRumah: rows[i]['Foto Rumah Jelas'],
-                    kebutuhan: rows[i]['Kebutuhan'], 
-                    kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
-                    totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
-                },
-                reviewer: "",
-                statusApplicant: "",
-                statusData: scoreApplicant.statusData,
-                statusRumah: scoreApplicant.statusRumah,
-                scoreApplicant: scoreApplicant.total
-            }
+//             //prepare the data to be sent to DB
+//             const dataInputUser = {
+//                 bioDiri: { 
+//                     NIK: rows[i]['Nomor KTP (NIK)'],
+//                     alamat: rows[i]['Alamat Lengkap'],
+//                     fotoDiri: rows[i]['Foto Diri'],
+//                     fotoKTP: rows[i]['Foto KTP'],
+//                     kotaKabupaten: rows[i]['Kabupaten / Kota'],
+//                     namaLengkap: rows[i]['Nama lengkap'],
+//                     noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
+//                     provinsi: rows[i]['Provinsi'],
+//                     sosmedAcc: rows[i]['Akun Sosial Media']
+//                 },
+//                 bioPendidikan: {
+//                     NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
+//                     NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
+//                     fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
+//                     fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
+//                     jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
+//                     tingkatPendidikan: rows[i]['Tingkat Pendidikan']
+//                 },
+//                 lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
+//                 lampiranPersetujuan: "-",
+//                 misc: {
+//                     beasiswaTerdaftar: idCampaign
+//                 },
+//                 motivationLetter: {
+//                     ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+//                     ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+//                     ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+//                     ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+//                     fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
+//                 },
+//                 notes: "",
+//                 pengajuanBantuan: {
+//                     ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
+//                     fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
+//                     fotoRumah: rows[i]['Foto Rumah Jelas'],
+//                     kebutuhan: rows[i]['Kebutuhan'], 
+//                     kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
+//                     totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
+//                 },
+//                 scoreApplicant: {
+//                     total: scoreApplicant.total,
+//                     scoreProvinsi: scoreApplicant.scoreProvinsi,
+//                     scoreKota: scoreApplicant.scoreKota,
+//                     scoreMedsos: scoreApplicant.scoreMedsos,
+//                     scoreKepemilikanRumah: scoreApplicant.scoreKepemilikanRumah,
+//                     scoreNIK: scoreApplicant.scoreNIK,
+//                     scoreRumah: scoreApplicant.scoreRumah,
+//                     scoreDana: scoreApplicant.scoreDana,
+//                     scoreLatarBelakang: scoreApplicant.scoreLatarBelakang,
+//                     scorePerjuangan: scoreApplicant.scorePerjuangan,
+//                     scorePenting: scoreApplicant.scorePenting,
+//                     scoreKegiatan: scoreApplicant.scoreKegiatan
+//                 },
+//                 reviewer: "",
+//                 statusApplicant: "",
+//                 statusData: scoreApplicant.statusData,
+//                 statusRumah: scoreApplicant.statusRumah,
+//             }
 
-            //adding the data from a row to database
-            var docRef = applicantRef.doc();
-            docRef.set(dataInputUser).then(
-                campaignRef.doc(idCampaign).get().then((data) => {
-                    const listApplicants = data.data().applicants
-                    listApplicants.push(docRef.id)
-                    campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                })
-            )
-        }
-    }
+//             if(scoreApplicant.total <= listApplicants[lenght]){
+//                 listApplicants.push(docRef.id)
+//             }
 
-    const updateCampaignProcess = async() => {
-        try{ 
-            await processApplicantData()
-            campaignRef.doc(idCampaign).update({process: "1"})
-            res.status(201).send({
-                error: false,
-                message: "All data has already fetched and created"
-            })
-        } catch (e) {
-            res.status(404).send({
-                error: true,
-                message: e.message
-            })
-        }
-    }
+//             //adding the data from a row to database
+//             var docRef = applicantRef.doc();
+//             docRef.set(dataInputUser).then(
+//                 campaignRef.doc(idCampaign).get().then((data) => {
+//                     const listApplicants = data.data().applicants
+//                     const length = listApplicants.length
+//                     for(let i = length; i >= 0; i--){
+//                         if(scoreApplicant.total <= listApplicants[i]){
+//                             listApplicants.push(docRef.id)
+//                         } else {
+//                             listApplicants.shift(docRef.id)
+//                         }
+    
+//                     }
+//                     listApplicants.push(docRef.id)
+//                     campaignRef.doc(idCampaign).update({applicants: listApplicants})
+//                 })
+//             )
+//         }
+//     }
 
-    //checking if the process for a campaign has already done
-    campaignRef.doc(idCampaign).get().then((data) => {
-        try{
-            if(data.data().process === "0"){
-                updateCampaignProcess();
-            } else if(data.data().process === "1"){
-                res.status(200).send({
-                    error: false,
-                    message: "The data for this campaign has already processed"
-                })
-            } else {
-                res.status(500).send({
-                    error: true,
-                    message: "Unknown process status"
-                })
-            }
-        } catch (e) {
-            res.status(500).send({
-                error: true,
-                message: "Internal server error"
-            })
-        }
-    })
+//     const updateCampaignProcess = async() => {
+//         try{ 
+//             await processApplicantData()
+//             campaignRef.doc(idCampaign).update({process: "1"})
+//             res.status(201).send({
+//                 error: false,
+//                 message: "All data has already fetched and created"
+//             })
+//         } catch (e) {
+//             res.status(404).send({
+//                 error: true,
+//                 message: e.message
+//             })
+//         }
+//     }
+
+//     //checking if the process for a campaign has already done
+//     campaignRef.doc(idCampaign).get().then((data) => {
+//         try{
+//             if(data.data().process === "0"){
+//                 updateCampaignProcess();
+//             } else if(data.data().process === "1"){
+//                 res.status(200).send({
+//                     error: false,
+//                     message: "The data for this campaign has already processed"
+//                 })
+//             } else {
+//                 res.status(500).send({
+//                     error: true,
+//                     message: "Unknown process status"
+//                 })
+//             }
+//         } catch (e) {
+//             res.status(500).send({
+//                 error: true,
+//                 message: "Internal server error"
+//             })
+//         }
+//     })
 
 
-})
+// })
 
 //API to get all available campaigns
 route.get('/',auth, (req,res) => {

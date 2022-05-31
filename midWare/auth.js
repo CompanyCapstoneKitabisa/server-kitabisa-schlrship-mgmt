@@ -13,7 +13,9 @@ function auth (req,res,next){
             })
         } else {
             //check if token still valid or already expired
-            if((token_decode.exp - token_decode.iat) > 3599){ //if token expired
+            const JWTTime = new Date(token_decode.exp * 1000)
+            const localTime = new Date()
+            if((localTime - JWTTime) > -1){ //if token expired
                 res.status(403).send({
                     error: true,
                     message: "EXPIRED TOKEN"
