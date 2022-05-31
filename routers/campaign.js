@@ -116,7 +116,7 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                     scoreKegiatan: scoreApplicant.scoreKegiatan
                 },
                 reviewer: "",
-                statusApplicant: "",
+                statusApplicant: "pending",
                 statusData: scoreApplicant.statusData,
                 statusRumah: scoreApplicant.statusRumah,
             }
@@ -379,7 +379,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                         }else if(userDataDetails.statusApplicant === 'onhold'){
                             counterOnHold++
                             applicantsNumber++
-                        } else if(userDataDetails.statusApplicant === ""){
+                        } else if(userDataDetails.statusApplicant === "pending"){
                             counterPending++
                             applicantsNumber++
                         }
