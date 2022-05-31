@@ -123,19 +123,36 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
             docRef.set(dataInputUser).then(
                 campaignRef.doc(idCampaign).get().then((data) => {
                     const listApplicants = data.data().applicants
-                    const length = listApplicants.length
+                    const dataLength = listApplicants.length
+                    let applicantCounter = 0;
                     const dataPush = {
                         id: docRef.id,
                         score: scoreApplicant.total
                     }
-                    // if(length === 0){
-                    //     listApplicants.push(dataPush)
-                    //     campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                    // } else {
 
-                    // }
-                    listApplicants.push(dataPush)
-                    campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                    //making sorting algorithm for applicant's score
+                    //if it's the first applicant, then immediately insert it
+                    if(dataLength === 0){
+                        applicantCounter++;
+                        listApplicants.push(dataPush)
+                        campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                    } else { //if it's not the first applicant
+                        for(let i = 0; i < dataLength; i++){
+                            if(scoreApplicant.total < listApplicants[dataLength-1].score){ //compare curr applicant's score with lowest score in array
+                                console.log('data paling kecil')
+                                applicantCounter++;
+                                listApplicants.push(dataPush)
+                                campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                            } else {
+                                if(scoreApplicant.total >= listApplicants[i].score){ //if curr applicant's score not lower than lowest score in array, then look for position for curr applicant's score
+                                    console.log('berhasil nyelip')
+                                    applicantCounter++;
+                                    listApplicants.splice(i,0,dataPush)
+                                    campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                                }
+                            }
+                        }
+                    }
                 })
             )
         }

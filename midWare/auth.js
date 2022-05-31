@@ -18,7 +18,8 @@ function auth (req,res,next){
             if((localTime - JWTTime) > -1){ //if token expired
                 res.status(403).send({
                     error: true,
-                    message: "EXPIRED TOKEN"
+                    message: "EXPIRED TOKEN",
+                    listCampaign: []
                 })
             } else{ //if token not expired
                 if(dbconf.auth().verifyIdToken(token, true)){
