@@ -179,7 +179,7 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                 updateCampaignProcess();
             } else if(data.data().process === "1"){
                 res.status(200).send({
-                    error: false,
+                    error: true,
                     message: "The data for this campaign has already processed"
                 })
             } else {
