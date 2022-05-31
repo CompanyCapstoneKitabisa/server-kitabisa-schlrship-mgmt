@@ -211,7 +211,7 @@ route.get('/',auth, (req,res) => {
             })
             
             if(campaignList.length !== 0){
-                res.status(404).send({
+                res.status(500).send({
                     error: false,
                     message: "Data successfully fetched",
                     listCampaign: campaignList
@@ -538,42 +538,50 @@ route.get('/:id/accepted',auth, checkCampaign, (req,res) => {
         campaignRef.doc(id).get().then((data) => {
             if(id === data.id){
                 const applicantsInCampaign = data.data().applicants
-                applicantsInCampaign.forEach((d) => {
-                    applicantRef.doc(d.id).get().then((userData) => {
-                        const userDataDetails = userData.data()
-                        
-                        if(userDataDetails.statusApplicant === 'accepted'){
-                            const dataSend = {
-                                id: userData.id,
-                                name: userDataDetails.bioDiri.namaLengkap,
-                                university: userDataDetails.university,
-                                rank: userDataDetails.rank,
-                                rating: userDataDetails.rating,
-                                status: userDataDetails.statusApplicant
-                            }  
-                            listApplicants.push(dataSend)
-                        }
-                        counter++
-
-                        //if it's already the last data, then send it
-                        if(counter === applicantsInCampaign.length){
-                            if(listApplicants.length === 0){
-                                res.status(200).send({
-                                    error: false,
-                                    campaign: data.data().name,
-                                    message: "No accepted applicants",
-                                })
-                            } else {
-                                res.status(200).send({
-                                    error: false,
-                                    message: "Fetched all accepted applicants",
-                                    campaign: data.data().name,
-                                    listApplicants
-                                })
-                            }
-                        }
+                //if there's no applicant yet
+                if(applicantsInCampaign.length === 0){
+                    res.status(200).send({
+                        error: false,
+                        message: "No accepted applicants yet"
                     })
-                })
+                } else {
+                    applicantsInCampaign.forEach((d) => {
+                        applicantRef.doc(d.id).get().then((userData) => {
+                            const userDataDetails = userData.data()
+                            
+                            if(userDataDetails.statusApplicant === 'accepted'){
+                                const dataSend = {
+                                    id: userData.id,
+                                    name: userDataDetails.bioDiri.namaLengkap,
+                                    university: userDataDetails.university,
+                                    rank: userDataDetails.rank,
+                                    rating: userDataDetails.rating,
+                                    status: userDataDetails.statusApplicant
+                                }  
+                                listApplicants.push(dataSend)
+                            }
+                            counter++
+    
+                            //if it's already the last data, then send it
+                            if(counter === applicantsInCampaign.length){
+                                if(listApplicants.length === 0){
+                                    res.status(200).send({
+                                        error: false,
+                                        campaign: data.data().name,
+                                        message: "No accepted applicants",
+                                    })
+                                } else {
+                                    res.status(200).send({
+                                        error: false,
+                                        message: "Fetched all accepted applicants",
+                                        campaign: data.data().name,
+                                        listApplicants
+                                    })
+                                }
+                            }
+                        })
+                    })
+                }
             }
         })
     } catch (e) {
