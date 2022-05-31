@@ -118,18 +118,12 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                 statusData: scoreApplicant.statusData,
                 statusRumah: scoreApplicant.statusRumah,
             }
-
-            if(scoreApplicant.total <= listApplicants[lenght]){
-                listApplicants.push(docRef.id)
-            }
-
             //adding the data from a row to database
             var docRef = applicantRef.doc();
             docRef.set(dataInputUser).then(
                 campaignRef.doc(idCampaign).get().then((data) => {
                     const listApplicants = data.data().applicants
                     const length = listApplicants.length
-                    console.log(length)
                     const dataPush = {
                         id: docRef.id,
                         score: scoreApplicant.total
@@ -211,7 +205,7 @@ route.get('/',auth, (req,res) => {
             })
             
             if(campaignList.length !== 0){
-                res.status(500).send({
+                res.status(200).send({
                     error: false,
                     message: "Data successfully fetched",
                     listCampaign: campaignList
@@ -310,7 +304,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                     //just in case if one of the applicants not found in db
                     if(userDataDetails === undefined){
                         res.status(200).send({
-                            message: `Failed to fetch applicants with id ${d}. not registered in db.`
+                            message: `Failed to fetch applicants with id ${d.id}. not registered in db.`
                         })
                     }
                     //else if applicants found in db
@@ -376,7 +370,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
             if(id === data.id){
                 const applicantsInCampaign = data.data().applicants
                 applicantsInCampaign.forEach((d) => {
-                    applicantRef.doc(d).get().then((userData) => {
+                    applicantRef.doc(d.id).get().then((userData) => {
                         const userDataDetails = userData.data()
                                 
                         const dataSend = {
@@ -431,6 +425,16 @@ route.get('/:id/applicants/:applicantsName',auth, checkCampaign, (req,res) => {
         campaignRef.doc(idCampaign).get().then((data) => {
             const campaignDataDetails = data.data()
             const listApplicantsFound = campaignDataDetails.applicants
+            let Datafound;
+
+            if(listApplicantsFound.length === 0) {
+                Datafound = []
+                res.status(200).send({
+                    error: false,
+                    message: "Search result",
+                    listApplicants: Datafound
+                })
+            }
 
             listApplicantsFound.forEach((LAF) => {
                 applicantsRef.doc(LAF.id).get().then((dataApplicant) => {
@@ -438,7 +442,7 @@ route.get('/:id/applicants/:applicantsName',auth, checkCampaign, (req,res) => {
                     const user_name = userDataDetails.bioDiri.namaLengkap
                     let lower_user_name = user_name.toLowerCase()
                     if(lower_user_name.includes(lower_name)){
-                        let Datafound = {
+                        Datafound = {
                             id: dataApplicant.id,
                             name: userDataDetails.bioDiri.namaLengkap,
                             university: userDataDetails.university,
@@ -481,42 +485,49 @@ route.get('/:id/rejected',auth, checkCampaign, (req,res) => {
         campaignRef.doc(id).get().then((data) => {
             if(id === data.id){
                 const applicantsInCampaign = data.data().applicants
-                applicantsInCampaign.forEach((d) => {
-                    applicantRef.doc(d.id).get().then((userData) => {
-                        const userDataDetails = userData.data()
-                        
-                        if(userDataDetails.statusApplicant === 'rejected'){
-                            const dataSend = {
-                                id: userData.id,
-                                name: userDataDetails.bioDiri.namaLengkap,
-                                university: userDataDetails.university,
-                                rank: userDataDetails.rank,
-                                rating: userDataDetails.rating,
-                                status: userDataDetails.statusApplicant
-                            }  
-                            listApplicants.push(dataSend)
-                        }
-                        counter++
-
-                        //if it's already the last data, then send it
-                        if(counter === applicantsInCampaign.length){
-                            if(listApplicants.length === 0){
-                                res.status(200).send({
-                                    error: false,
-                                    campaign: data.data().name,
-                                    message: "No rejected applicants",
-                                })
-                            } else {
-                                res.status(200).send({
-                                    error: false,
-                                    message: "Fetched all rejected applicants",
-                                    campaign: data.data().name,
-                                    listApplicants
-                                })
-                            }
-                        }
+                if(applicantsInCampaign.length === 0){
+                    res.status(200).send({
+                        error: false,
+                        message: "No rejected applicants yet"
                     })
-                })
+                } else {
+                    applicantsInCampaign.forEach((d) => {
+                        applicantRef.doc(d.id).get().then((userData) => {
+                            const userDataDetails = userData.data()
+                            
+                            if(userDataDetails.statusApplicant === 'rejected'){
+                                const dataSend = {
+                                    id: userData.id,
+                                    name: userDataDetails.bioDiri.namaLengkap,
+                                    university: userDataDetails.university,
+                                    rank: userDataDetails.rank,
+                                    rating: userDataDetails.rating,
+                                    status: userDataDetails.statusApplicant
+                                }  
+                                listApplicants.push(dataSend)
+                            }
+                            counter++
+    
+                            //if it's already the last data, then send it
+                            if(counter === applicantsInCampaign.length){
+                                if(listApplicants.length === 0){
+                                    res.status(200).send({
+                                        error: false,
+                                        campaign: data.data().name,
+                                        message: "No rejected applicants",
+                                    })
+                                } else {
+                                    res.status(200).send({
+                                        error: false,
+                                        message: "Fetched all rejected applicants",
+                                        campaign: data.data().name,
+                                        listApplicants
+                                    })
+                                }
+                            }
+                        })
+                    })
+                }
             }
         })
     } catch (e) {
