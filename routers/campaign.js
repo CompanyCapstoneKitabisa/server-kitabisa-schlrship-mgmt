@@ -6,6 +6,7 @@ const auth = require('../midWare/auth.js');
 const score = require('./getApplicantScore');
 const dotenv = require('dotenv');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { default: axios } = require('axios');
 
 require('dotenv').config();
 
@@ -14,12 +15,13 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
+route.get('/:id/applicants/processData', checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
     let idGSheet = '';
     let scoreApplicant = '';
+    let page = 1;
 
     let processApplicantData = async() => {
         await campaignRef.doc(idCampaign).get().then((data) => {
@@ -118,38 +120,34 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                 statusData: scoreApplicant.statusData,
                 statusRumah: scoreApplicant.statusRumah,
             }
+
             //adding the data from a row to database
+
             var docRef = applicantRef.doc();
             docRef.set(dataInputUser).then(
                 campaignRef.doc(idCampaign).get().then((data) => {
                     const listApplicants = data.data().applicants
                     const dataLength = listApplicants.length
-                    let applicantCounter = 0;
                     const dataPush = {
                         id: docRef.id,
-                        score: scoreApplicant.total
+                        score: scoreApplicant.total,
+                        page
                     }
 
                     //making sorting algorithm for applicant's score
                     //if it's the first applicant, then immediately insert it
                     if(dataLength === 0){
-                        applicantCounter++;
                         listApplicants.push(dataPush)
                         campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                    } else { //if it's not the first applicant
+                    } else if(scoreApplicant.total < listApplicants[dataLength-1].score){ //if it's not the first applicant
+                        listApplicants.push(dataPush)
+                        campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                    } else {
                         for(let i = 0; i < dataLength; i++){
-                            if(scoreApplicant.total < listApplicants[dataLength-1].score){ //compare curr applicant's score with lowest score in array
-                                console.log('data paling kecil')
-                                applicantCounter++;
-                                listApplicants.push(dataPush)
+                            if(scoreApplicant.total >= listApplicants[i].score){ //if curr applicant's score not lower than lowest score in array, then look for position for curr applicant's score
+                                listApplicants.splice(i,0,dataPush)
                                 campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                            } else {
-                                if(scoreApplicant.total >= listApplicants[i].score){ //if curr applicant's score not lower than lowest score in array, then look for position for curr applicant's score
-                                    console.log('berhasil nyelip')
-                                    applicantCounter++;
-                                    listApplicants.splice(i,0,dataPush)
-                                    campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                                }
+                                i = dataLength
                             }
                         }
                     }
@@ -197,8 +195,52 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
             })
         }
     })
+})
 
 
+route.get('/:id/applicants/givePageNumber', (req,res) => {
+    const campaignRef = db.collection('campaigns')
+    let setPage = 1;
+    let pageCount = 0;
+    const idCampaign = req.params.id
+
+    let givePageNumber = async() => {
+        campaignRef.doc(idCampaign).get().then((data) => {
+            const detailDataApplicants = data.data().applicants;
+            const status = data.data().pageNumber;
+            if(detailDataApplicants === [] || detailDataApplicants === undefined){
+                res.status(200).send({
+                    error: false,
+                    message: "Data not available yet"
+                })
+            } else if(status === "0"){
+                for(let i = 0; i < detailDataApplicants.length; i++){
+                    if(pageCount !== 0 && pageCount % 3 === 0){
+                        setPage++;
+                    }
+                    detailDataApplicants[i].page = setPage
+                    pageCount++;
+                }
+                campaignRef.doc(idCampaign).update({applicants: detailDataApplicants, pageNumber: "1"})
+                res.status(200).send({
+                    error: false,
+                    message: "Success giving number page"
+                })
+            } else if(status === "1"){
+                res.status(200).send({
+                    error: true,
+                    message: "Giving pageNumber has been done"
+                })
+            } else {
+                res.status(500).send({
+                    error: true,
+                    message: "Internal server error"
+                })
+            }
+        })
+    }
+
+    givePageNumber();
 })
 
 //API to get all available campaigns
@@ -262,6 +304,7 @@ route.post('/', auth, (req,res) => {
             penggalangDana: penggalangDana,
             photoUrl,
             process: "0",
+            pageNumber: "0",
             SnK,
             applicants: [],
             idGSheet: idgsheet
@@ -374,22 +417,24 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
 })
 
 //getting all applicants in a specific scholarship program
-route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
+route.get('/:id/applicants', checkCampaign, (req,res) => {
     const id = req.params.id;
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
+    const pageNumber = req.query.page
     let listApplicants = [];
     let counter = 0;
     let available = 0;
 
     try{
         campaignRef.doc(id).get().then((data) => {
+            const campaignName = data.data().name
             if(id === data.id){
-                const applicantsInCampaign = data.data().applicants
-                applicantsInCampaign.forEach((d) => {
+                if(pageNumber === undefined || pageNumber == ""){
+                    const applicantsInCampaign = data.data().applicants
+                    applicantsInCampaign.forEach((d) => {
                     applicantRef.doc(d.id).get().then((userData) => {
                         const userDataDetails = userData.data()
-                                
                         const dataSend = {
                             id: userData.id,
                             photoURL: userDataDetails.bioDiri.fotoDiri,
@@ -411,13 +456,62 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                 res.status(200).send({
                                     error: false,
                                     message: "All applicants successfully fetched",
-                                    campaign: data.data().name,
+                                    campaign: campaignName,
                                     listApplicants
                                 })
                             }
                         })
                     })
-                }
+                } else { //handling if there's page number defined
+                    const applicantsInCampaign = data.data().applicants
+                    let totalDataFound = 0;
+                    for(let i = 0; i < applicantsInCampaign.length; i++){
+                        if(applicantsInCampaign[i].page == pageNumber){
+                            totalDataFound++;
+                        }
+                    }
+                    if(totalDataFound > 0){
+                        applicantsInCampaign.forEach((data) => {
+                            if(data.page == pageNumber){
+                                applicantRef.doc(data.id).get().then((userData) => {
+                                    const userDataDetails = userData.data()
+                                    const dataSend = {
+                                        id: userData.id,
+                                        photoURL: userDataDetails.bioDiri.fotoDiri,
+                                        name: userDataDetails.bioDiri.namaLengkap,
+                                        provinsi: userDataDetails.bioDiri.provinsi,
+                                        kota: userDataDetails.bioDiri.kotaKabupaten,
+                                        university: userDataDetails.bioPendidikan.NPSN,
+                                        score: userDataDetails.scoreApplicant,
+                                        statusApplicant: userDataDetails.statusApplicant,
+                                        statusData: userDataDetails.statusData,
+                                        statusRumah: userDataDetails.statusRumah
+                                    }
+                                    counter++;
+                                    listApplicants.push(dataSend);
+                    
+                                    //if it's already the last data, then send it\
+                                    if(counter === totalDataFound){
+                                        res.status(200).send({
+                                            error: false,
+                                            message: "All applicants successfully fetched",
+                                            campaign: campaignName,
+                                            listApplicants
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    } else {
+                        res.status(200).send({
+                            error: false,
+                            message: "All applicants successfully fetched",
+                            campaign: campaignName,
+                            listApplicants
+                        })
+                    }
+                }       
+            }
         })
     } catch (e) {
         res.status(500).send({
