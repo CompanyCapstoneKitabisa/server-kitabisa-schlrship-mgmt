@@ -336,18 +336,19 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
         campaignRef.doc(id).get().then((data) => {
             const detailCampaignData = data.data().applicants
             const campaignData = data.data();
-            
             //if there's no applicants at all
             if(detailCampaignData.length < 1){
                 const sendData = {
                     name: campaignData.name,
                     penggalangDana: campaignData.penggalangDana,
                     photoUrl: campaignData.photoUrl,
+                    processData: campaignData.process,
+                    processPageNumber: campaignData.pageNumber,
                     applicantsCount: 0,
                     acceptedApplicants: 0,
                     rejectedApplicants: 0,
                     onHoldApplicants: 0,
-                    pendingApplicants: 0
+                    pendingApplicants: 0,
                 }
                 res.status(200).send({
                     error: false,
@@ -391,6 +392,8 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                                 name: campaignData.name,
                                 penggalangDana: campaignData.penggalangDana,
                                 photoUrl: campaignData.photoUrl,
+                                processData: campaignData.process,
+                                processPageNumber: campaignData.pageNumber,
                                 applicantsCount: applicantsNumber,
                                 acceptedApplicants: counterAccepted,
                                 rejectedApplicants: counterRejected,
