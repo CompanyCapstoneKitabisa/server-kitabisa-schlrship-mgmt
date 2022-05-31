@@ -435,6 +435,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
             if(id === data.id){
                 if(pageNumber === undefined || pageNumber == ""){
                     const applicantsInCampaign = data.data().applicants
+                    console.log(applicantsInCampaign)
                     applicantsInCampaign.forEach((d) => {
                     applicantRef.doc(d.id).get().then((userData) => {
                         const userDataDetails = userData.data()
@@ -450,9 +451,24 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                             statusData: userDataDetails.statusData,
                             statusRumah: userDataDetails.statusRumah
                             }  
-        
-                            counter++
-                            listApplicants.push(dataSend)
+
+                            const length = listApplicants.length;
+                            if(length === 0){
+                                listApplicants.push(dataSend)
+                                counter++
+                            }else if(dataSend.score.total < listApplicants[length-1].score.total){
+                                listApplicants.push(dataSend)
+                                counter++
+                            }else{
+                                for(let i = 0; i < length; i++){
+                                    if(dataSend.score.total >= listApplicants[i].score.total){
+                                        listApplicants.splice(i,0,dataSend)
+                                        counter++
+                                        i = length
+                                    }
+                                }
+                            }
+
         
                             //if it's already the last data, then send it
                             if(counter === applicantsInCampaign.length){
