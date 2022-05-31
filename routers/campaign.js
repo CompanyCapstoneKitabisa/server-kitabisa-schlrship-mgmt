@@ -15,7 +15,7 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData', checkCampaign, (req,res) => {
+route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
@@ -198,7 +198,7 @@ route.get('/:id/applicants/processData', checkCampaign, (req,res) => {
 })
 
 
-route.get('/:id/applicants/givePageNumber', (req,res) => {
+route.get('/:id/applicants/givePageNumber', auth, checkCampaign,(req,res) => {
     const campaignRef = db.collection('campaigns')
     let setPage = 1;
     let pageCount = 0;
@@ -417,7 +417,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
 })
 
 //getting all applicants in a specific scholarship program
-route.get('/:id/applicants', checkCampaign, (req,res) => {
+route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
     const id = req.params.id;
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
