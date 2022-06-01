@@ -54,6 +54,20 @@ route.get('/',auth, (req,res) => {
                         ceritakegiatanYangDigeluti: applicantsDataDetail.motivationLetter.ceritaKegiatanYangDigeluti,
                         fotoBuktiKegiatan: applicantsDataDetail.motivationLetter.fotoBuktiKegiatan
                     },
+                    scoreApplicant: {
+                        total: applicantsDataDetail.scoreApplicant.total,
+                        scoreRumah: applicantsDataDetail.scoreApplicant.scoreRumah,
+                        scoreProvinsi: applicantsDataDetail.scoreApplicant.scoreProvinsi,
+                        scorePerjuangan: applicantsDataDetail.scoreApplicant.scorePerjuangan,
+                        scorepenting: applicantsDataDetail.scoreApplicant.scorepenting,
+                        scoreNIK: applicantsDataDetail.scoreApplicant.scoreNIK,
+                        scoreMedsos: applicantsDataDetail.scoreApplicant.scoreMedsos,
+                        scoreLatarBelakang: applicantsDataDetail.scoreApplicant.scoreLatarBelakang,
+                        scoreKota: applicantsDataDetail.scoreApplicant.scoreKota,
+                        scoreKepemilikianRumah: applicantsDataDetail.scoreApplicant.scoreKepemilikianRumah,
+                        scorekegiatan: applicantsDataDetail.scoreApplicant.scoreKegiatan,
+                        scoreDana: applicantsDataDetail.scoreApplicant.scoreDana
+                    },
                     statusApplicant : applicantsDataDetail.statusApplicant,
                     statusData: applicantsDataDetail.statusData,
                     statusRumah: applicantsDataDetail.statusRumah,
