@@ -16,6 +16,7 @@
     6. [*Getting all accepted applicants from specific scholarship program](#getting-all-accepted-applicants-from-specific-scholarship-program)
     7. [Search applicant by name in a specific campaign](#search-applicant-by-name-in-a-specific-campaign)
     8. [Activating process Data for a campaign](#activating-process-data-for-a-campaign)
+    9. [Activating giving applicants page number](#activating-giving-applicants-page-number)
 5. [Applicants](#applicants)
     1. [Get specific applicants detail](#get-specific-applicants-detail)
     2. [Update specific applicant status](#update-specific-applicant-status)
@@ -327,6 +328,20 @@ if only one of 4 parameter null or ""
     - GET
 - URL Parameter
     - id_campaign as string
+ ```
+ {response to be added}
+ ```
+
+### Activating giving applicants page number
+- URL
+    - /campaigns/{ID_CAMPAIGN}/applicants/givePageNumber
+ - Method
+    - GET
+ - URL parameter
+    - id_campaign as string
+ ```
+ {response to be added}
+ ```
 
 ## Applicants
 ### Get specific applicants detail
