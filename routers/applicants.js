@@ -8,7 +8,7 @@ const route = express();
 const db = dbconf.firestore();
 
 //API specific applicants detail
-route.get('/',auth, (req,res) => {
+route.get('/', (req,res) => {
     const id = req.query.id;
     var applicantsRef = db.collection('applicants');
     var success = 0;
@@ -59,13 +59,13 @@ route.get('/',auth, (req,res) => {
                         scoreRumah: applicantsDataDetail.scoreApplicant.scoreRumah,
                         scoreProvinsi: applicantsDataDetail.scoreApplicant.scoreProvinsi,
                         scorePerjuangan: applicantsDataDetail.scoreApplicant.scorePerjuangan,
-                        scorepenting: applicantsDataDetail.scoreApplicant.scorepenting,
+                        scorePenting: applicantsDataDetail.scoreApplicant.scorePenting,
                         scoreNIK: applicantsDataDetail.scoreApplicant.scoreNIK,
                         scoreMedsos: applicantsDataDetail.scoreApplicant.scoreMedsos,
                         scoreLatarBelakang: applicantsDataDetail.scoreApplicant.scoreLatarBelakang,
                         scoreKota: applicantsDataDetail.scoreApplicant.scoreKota,
-                        scoreKepemilikianRumah: applicantsDataDetail.scoreApplicant.scoreKepemilikianRumah,
-                        scorekegiatan: applicantsDataDetail.scoreApplicant.scoreKegiatan,
+                        scoreKepemilikianRumah: applicantsDataDetail.scoreApplicant.scoreKepemilikanRumah,
+                        scoreKegiatan: applicantsDataDetail.scoreApplicant.scoreKegiatan,
                         scoreDana: applicantsDataDetail.scoreApplicant.scoreDana
                     },
                     statusApplicant : applicantsDataDetail.statusApplicant,
