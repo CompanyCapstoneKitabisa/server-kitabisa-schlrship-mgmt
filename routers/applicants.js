@@ -8,7 +8,7 @@ const route = express();
 const db = dbconf.firestore();
 
 //API specific applicants detail
-route.get('/', (req,res) => {
+route.get('/',auth, (req,res) => {
     const id = req.query.id;
     var applicantsRef = db.collection('applicants');
     var success = 0;
