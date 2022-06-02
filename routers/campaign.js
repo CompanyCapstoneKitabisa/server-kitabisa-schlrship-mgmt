@@ -419,9 +419,14 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
     }
 })
 
-//getting all applicants in a specific scholarship program
-route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
+//getting all pending applicants from specific scholarship program
+route.get('/:id/applicants', checkCampaign, (req,res) => {
     const id = req.params.id;
+    const status = req.query.status;
+    const nama = req.query.nama;
+    const statusRumah = req.query.statusRumah;
+    const statusData = req.query.statusData;
+    const provinsi = req.query.provinsi;
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const pageNumber = req.query.page
@@ -440,7 +445,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
 
                                 const userDataDetails = userData.data()
                                 
-                                if(userDataDetails.statusApplicant === "pending"){
+                                if(status === "" || status === undefined){
                                     const dataSend = {
                                         id: userData.id,
                                         photoURL: userDataDetails.bioDiri.fotoDiri,
@@ -468,11 +473,186 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                             }
                                         }
                                     }
+                                } else {
+                                    if(status === "pending"){
+                                        if(userDataDetails.statusApplicant === "pending"){
+                                            const dataSend = {
+                                                id: userData.id,
+                                                photoURL: userDataDetails.bioDiri.fotoDiri,
+                                                name: userDataDetails.bioDiri.namaLengkap,
+                                                provinsi: userDataDetails.bioDiri.provinsi,
+                                                kota: userDataDetails.bioDiri.kotaKabupaten,
+                                                university: userDataDetails.bioPendidikan.NPSN,
+                                                score: userDataDetails.scoreApplicant.total,
+                                                statusApplicant: userDataDetails.statusApplicant,
+                                                statusData: userDataDetails.statusData,
+                                                statusRumah: userDataDetails.statusRumah
+                                                }  
+                                                
+                                            const length = listApplicants.length;
+        
+                                            if(length === 0){
+                                                listApplicants.push(dataSend)
+                                            }else if(dataSend.score < listApplicants[length-1].score){
+                                                listApplicants.push(dataSend)
+                                            }else{
+                                                for(let i = 0; i < length; i++){
+                                                    if(dataSend.score >= listApplicants[i].score){
+                                                        listApplicants.splice(i,0,dataSend)
+                                                        i = length
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else if (status === "accepted"){
+                                        if(userDataDetails.statusApplicant === "accepted"){
+                                            const dataSend = {
+                                                id: userData.id,
+                                                photoURL: userDataDetails.bioDiri.fotoDiri,
+                                                name: userDataDetails.bioDiri.namaLengkap,
+                                                provinsi: userDataDetails.bioDiri.provinsi,
+                                                kota: userDataDetails.bioDiri.kotaKabupaten,
+                                                university: userDataDetails.bioPendidikan.NPSN,
+                                                score: userDataDetails.scoreApplicant.total,
+                                                statusApplicant: userDataDetails.statusApplicant,
+                                                statusData: userDataDetails.statusData,
+                                                statusRumah: userDataDetails.statusRumah
+                                                }  
+                                                
+                                            const length = listApplicants.length;
+        
+                                            if(length === 0){
+                                                listApplicants.push(dataSend)
+                                            }else if(dataSend.score < listApplicants[length-1].score){
+                                                listApplicants.push(dataSend)
+                                            }else{
+                                                for(let i = 0; i < length; i++){
+                                                    if(dataSend.score >= listApplicants[i].score){
+                                                        listApplicants.splice(i,0,dataSend)
+                                                        i = length
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else if (status === "rejected"){
+                                        if(userDataDetails.statusApplicant === "rejected"){
+                                            const dataSend = {
+                                                id: userData.id,
+                                                photoURL: userDataDetails.bioDiri.fotoDiri,
+                                                name: userDataDetails.bioDiri.namaLengkap,
+                                                provinsi: userDataDetails.bioDiri.provinsi,
+                                                kota: userDataDetails.bioDiri.kotaKabupaten,
+                                                university: userDataDetails.bioPendidikan.NPSN,
+                                                score: userDataDetails.scoreApplicant.total,
+                                                statusApplicant: userDataDetails.statusApplicant,
+                                                statusData: userDataDetails.statusData,
+                                                statusRumah: userDataDetails.statusRumah
+                                                }  
+                                                
+                                            const length = listApplicants.length;
+        
+                                            if(length === 0){
+                                                listApplicants.push(dataSend)
+                                            }else if(dataSend.score < listApplicants[length-1].score){
+                                                listApplicants.push(dataSend)
+                                            }else{
+                                                for(let i = 0; i < length; i++){
+                                                    if(dataSend.score >= listApplicants[i].score){
+                                                        listApplicants.splice(i,0,dataSend)
+                                                        i = length
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else if(status === "onhold"){
+                                        if(userDataDetails.statusApplicant === "onhold"){
+                                            const dataSend = {
+                                                id: userData.id,
+                                                photoURL: userDataDetails.bioDiri.fotoDiri,
+                                                name: userDataDetails.bioDiri.namaLengkap,
+                                                provinsi: userDataDetails.bioDiri.provinsi,
+                                                kota: userDataDetails.bioDiri.kotaKabupaten,
+                                                university: userDataDetails.bioPendidikan.NPSN,
+                                                score: userDataDetails.scoreApplicant.total,
+                                                statusApplicant: userDataDetails.statusApplicant,
+                                                statusData: userDataDetails.statusData,
+                                                statusRumah: userDataDetails.statusRumah
+                                                }  
+                                                
+                                            const length = listApplicants.length;
+        
+                                            if(length === 0){
+                                                listApplicants.push(dataSend)
+                                            }else if(dataSend.score < listApplicants[length-1].score){
+                                                listApplicants.push(dataSend)
+                                            }else{
+                                                for(let i = 0; i < length; i++){
+                                                    if(dataSend.score >= listApplicants[i].score){
+                                                        listApplicants.splice(i,0,dataSend)
+                                                        i = length
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
 
                                 counter++;
                                  //if it's already the last data, then send it
                                  if(counter === applicantsInCampaign.length){
+                                    
+                                    if(nama !== undefined){
+                                        for(let i = 0; i < applicantsInCampaign.length; i++){
+                                            for(let j = 0; j < listApplicants.length; j++){
+                                                const lower_nama = nama.toLowerCase() //name from query
+                                                const namaInsideList = listApplicants[j].name; //name from array
+                                                const lower_namaInsideList = namaInsideList.toLowerCase();
+                                                if(!lower_namaInsideList.includes(lower_nama)){
+                                                    listApplicants.splice(j,1)
+                                                }
+                                            }
+                                        }
+                                    } 
+
+                                    if(provinsi !== undefined){
+                                        for(let i = 0; i < applicantsInCampaign.length; i++){
+                                            for(let j = 0; j < listApplicants.length; j++){
+                                                const lower_provinsi = provinsi.toLowerCase() //name from query
+                                                const provinsiInsideList = listApplicants[j].provinsi; //name from array
+                                                const lower_provinsiInsideList = provinsiInsideList.toLowerCase();
+                                                if(lower_provinsiInsideList !== lower_provinsi){
+                                                    listApplicants.splice(j,1)
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if(statusRumah !== undefined){
+                                        for(let i = 0; i < applicantsInCampaign.length; i++){
+                                            for(let j = 0; j < listApplicants.length; j++){
+                                                const lower_statusRumah = statusRumah.toLowerCase() //name from query
+                                                const SRInsideList = listApplicants[j].statusRumah; //name from array
+                                                const lower_SRInsideList = SRInsideList.toLowerCase();
+                                                if(lower_SRInsideList !== lower_statusRumah){
+                                                    listApplicants.splice(j,1)
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if(statusData !== undefined){
+                                        for(let i = 0; i < applicantsInCampaign.length; i++){
+                                            for(let j = 0; j < listApplicants.length; j++){
+                                                const lower_statusData = statusData.toLowerCase() //name from query
+                                                const SDInsideList = listApplicants[j].statusData; //name from array
+                                                const lower_SDInsideList = SDInsideList.toLowerCase();
+                                                if(lower_SDInsideList !== lower_statusData){
+                                                    listApplicants.splice(j,1)
+                                                }
+                                            }
+                                        }
+                                    }
+                                        
                                     res.status(200).send({
                                         error: false,
                                         message: "All applicants successfully fetched",
@@ -503,35 +683,37 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                             if(data.page == pageNumber){
                                 applicantRef.doc(data.id).get().then((userData) => {
                                     const userDataDetails = userData.data()
-                                    const dataSend = {
-                                        id: userData.id,
-                                        photoURL: userDataDetails.bioDiri.fotoDiri,
-                                        name: userDataDetails.bioDiri.namaLengkap,
-                                        provinsi: userDataDetails.bioDiri.provinsi,
-                                        kota: userDataDetails.bioDiri.kotaKabupaten,
-                                        university: userDataDetails.bioPendidikan.NPSN,
-                                        score: userDataDetails.scoreApplicant,
-                                        statusApplicant: userDataDetails.statusApplicant,
-                                        statusData: userDataDetails.statusData,
-                                        statusRumah: userDataDetails.statusRumah
-                                    }
-                                    const length = listApplicants.length;
-                                    if(length === 0){
-                                        listApplicants.push(dataSend)
-                                        counter++
-                                    }else if(dataSend.score.total < listApplicants[length-1].score.total){
-                                        listApplicants.push(dataSend)
-                                        counter++
-                                    }else{
-                                        for(let i = 0; i < length; i++){
-                                            if(dataSend.score.total >= listApplicants[i].score.total){
-                                                listApplicants.splice(i,0,dataSend)
-                                                counter++
-                                                i = length
+
+                                    if(userDataDetails.statusApplicant === "pending"){
+                                        const dataSend = {
+                                            id: userData.id,
+                                            photoURL: userDataDetails.bioDiri.fotoDiri,
+                                            name: userDataDetails.bioDiri.namaLengkap,
+                                            provinsi: userDataDetails.bioDiri.provinsi,
+                                            kota: userDataDetails.bioDiri.kotaKabupaten,
+                                            university: userDataDetails.bioPendidikan.NPSN,
+                                            score: userDataDetails.scoreApplicant.total,
+                                            statusApplicant: userDataDetails.statusApplicant,
+                                            statusData: userDataDetails.statusData,
+                                            statusRumah: userDataDetails.statusRumah
+                                            }  
+                                            
+                                        const length = listApplicants.length;
+
+                                        if(length === 0){
+                                            listApplicants.push(dataSend)
+                                        }else if(dataSend.score < listApplicants[length-1].score){
+                                            listApplicants.push(dataSend)
+                                        }else{
+                                            for(let i = 0; i < length; i++){
+                                                if(dataSend.score >= listApplicants[i].score){
+                                                    listApplicants.splice(i,0,dataSend)
+                                                    i = length
+                                                }
                                             }
                                         }
                                     }
-                    
+                                    counter++;
                                     //if it's already the last data, then send it\
                                     if(counter === totalDataFound){
                                         res.status(200).send({
@@ -625,171 +807,6 @@ route.get('/:id/applicants/:applicantsName',auth, checkCampaign, (req,res) => {
             })
         })
     } catch (e){
-        res.status(500).send({
-            message: "Internal server error"
-        })
-    }
-})
-
-//getting all rejected applicants from specific scholarship program
-route.get('/:id/rejected',auth, checkCampaign, (req,res) => {
-    const id = req.params.id;
-    const campaignRef = db.collection('campaigns');
-    const applicantRef = db.collection('applicants');
-    let listApplicants = [];
-    let counter = 0;
-
-    try{
-        campaignRef.doc(id).get().then((data) => {
-            if(id === data.id){
-                const applicantsInCampaign = data.data().applicants
-                if(applicantsInCampaign.length === 0){
-                    res.status(200).send({
-                        error: false,
-                        message: "No rejected applicants yet"
-                    })
-                } else {
-                    applicantsInCampaign.forEach((d) => {
-                        applicantRef.doc(d.id).get().then((userData) => {
-                            const userDataDetails = userData.data()
-                            
-                            if(userDataDetails.statusApplicant === 'rejected'){
-                                const dataSend = {
-                                    id: userData.id,
-                                    photoURL: userDataDetails.bioDiri.fotoDiri,
-                                    name: userDataDetails.bioDiri.namaLengkap,
-                                    provinsi: userDataDetails.bioDiri.provinsi,
-                                    kota: userDataDetails.bioDiri.kotaKabupaten,
-                                    university: userDataDetails.bioPendidikan.NPSN,
-                                    score: userDataDetails.scoreApplicant.total,
-                                    statusApplicant: userDataDetails.statusApplicant,
-                                    statusData: userDataDetails.statusData,
-                                    statusRumah: userDataDetails.statusRumah
-                                } 
-
-                                //sort the applicant based on their total score (high to low)
-                                const length = listApplicants.length;
-                                if(length === 0){
-                                    listApplicants.push(dataSend)
-                                }else if(dataSend.score < listApplicants[length-1].score){
-                                    listApplicants.push(dataSend)
-                                }else{
-                                    for(let i = 0; i < length; i++){
-                                        if(dataSend.score >= listApplicants[i].score){
-                                            listApplicants.splice(i,0,dataSend)
-                                            i = length
-                                        }
-                                    }
-                                }
-                            }
-
-                            counter++
-                            //if it's already the last data, then send it
-                            if(counter === applicantsInCampaign.length){
-                                if(listApplicants.length === 0){
-                                    res.status(200).send({
-                                        error: false,
-                                        campaign: data.data().name,
-                                        message: "No rejected applicants",
-                                    })
-                                } else {
-                                    res.status(200).send({
-                                        error: false,
-                                        message: "Fetched all rejected applicants",
-                                        campaign: data.data().name,
-                                        listApplicants
-                                    })
-                                }
-                            }
-                        })
-                    })
-                }
-            }
-        })
-    } catch (e) {
-        res.status(500).send({
-            message: "Internal server error"
-        })
-    }
-})
-
-//getting all accepted applicants from specific scholarship program
-route.get('/:id/accepted',auth, checkCampaign, (req,res) => {
-    const id = req.params.id;
-    const campaignRef = db.collection('campaigns');
-    const applicantRef = db.collection('applicants');
-    let listApplicants = [];
-    let counter = 0;
-
-    try{
-        campaignRef.doc(id).get().then((data) => {
-            if(id === data.id){
-                const applicantsInCampaign = data.data().applicants
-                //if there's no applicant yet
-                if(applicantsInCampaign.length === 0){
-                    res.status(200).send({
-                        error: false,
-                        message: "No accepted applicants yet"
-                    })
-                } else {
-                    applicantsInCampaign.forEach((d) => {
-                        applicantRef.doc(d.id).get().then((userData) => {
-                            const userDataDetails = userData.data()
-                            
-                            if(userDataDetails.statusApplicant === 'accepted'){
-                                const dataSend = {
-                                    id: userData.id,
-                                    photoURL: userDataDetails.bioDiri.fotoDiri,
-                                    name: userDataDetails.bioDiri.namaLengkap,
-                                    provinsi: userDataDetails.bioDiri.provinsi,
-                                    kota: userDataDetails.bioDiri.kotaKabupaten,
-                                    university: userDataDetails.bioPendidikan.NPSN,
-                                    score: userDataDetails.scoreApplicant.total,
-                                    statusApplicant: userDataDetails.statusApplicant,
-                                    statusData: userDataDetails.statusData,
-                                    statusRumah: userDataDetails.statusRumah
-                                }  
-
-                                //sort the applicant based on their total score (high to low)
-                                const length = listApplicants.length;
-                                if(length === 0){
-                                    listApplicants.push(dataSend)
-                                }else if(dataSend.score < listApplicants[length-1].score){
-                                    listApplicants.push(dataSend)
-                                }else{
-                                    for(let i = 0; i < length; i++){
-                                        if(dataSend.score >= listApplicants[i].score){
-                                            listApplicants.splice(i,0,dataSend)
-                                            i = length
-                                        }
-                                    }
-                                }
-                            }
-
-                            counter++
-                            //if it's already the last data, then send it
-                            if(counter === applicantsInCampaign.length){
-                                if(listApplicants.length === 0){
-                                    res.status(200).send({
-                                        error: false,
-                                        campaign: data.data().name,
-                                        listApplicants
-                                    })
-                                } else {
-                                    res.status(200).send({
-                                        error: false,
-                                        message: "Fetched all accepted applicants",
-                                        campaign: data.data().name,
-                                        listApplicants
-                                    })
-                                }
-                            }
-                        })
-                    })
-                }
-            }
-        })
-    } catch (e) {
         res.status(500).send({
             message: "Internal server error"
         })
