@@ -620,7 +620,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                                 const lower_provinsi = provinsi.toLowerCase() //name from query
                                                 const provinsiInsideList = listApplicants[j].provinsi; //name from array
                                                 const lower_provinsiInsideList = provinsiInsideList.toLowerCase();
-                                                if(lower_provinsiInsideList !== lower_provinsi){
+                                                if(!lower_provinsiInsideList.includes(lower_provinsi)){
                                                     listApplicants.splice(j,1)
                                                 }
                                             }
