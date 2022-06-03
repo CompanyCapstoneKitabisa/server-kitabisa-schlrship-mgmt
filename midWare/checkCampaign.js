@@ -3,7 +3,13 @@ const dbconf = require('../config/firebase conf.js');
 const db = dbconf.firestore();
 
 function check (req,res,next){
-    const idCampaign = req.params.id;
+    let idCampaign;
+    if(req.params.id !== undefined){
+        idCampaign = req.params.id
+    } else {
+        idCampaign = req.body.idCampaign
+    }
+
     const campaignRef = db.collection('campaigns');
     let available = 0;
 

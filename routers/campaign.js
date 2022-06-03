@@ -7,6 +7,7 @@ const score = require('./getApplicantScore');
 const dotenv = require('dotenv');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { default: axios } = require('axios');
+const sortArray = require('sort-array')
 
 require('dotenv').config();
 
@@ -198,46 +199,121 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
 })
 
 
-route.get('/:id/applicants/givePageNumber', auth, checkCampaign,(req,res) => {
-    const campaignRef = db.collection('campaigns')
-    let setPage = 1;
-    let pageCount = 0;
+route.get('/:id/applicants/givePageNumber',auth, checkCampaign,(req,res) => {
+    const campaignRef = db.collection('campaigns');
+    const applicantRef = db.collection('applicants');
+
+    let counter = 0;
     const idCampaign = req.params.id
 
-    let givePageNumber = async() => {
-        campaignRef.doc(idCampaign).get().then((data) => {
-            const detailDataApplicants = data.data().applicants;
-            const status = data.data().pageNumber;
-            if(detailDataApplicants === [] || detailDataApplicants === undefined){
-                res.status(200).send({
-                    error: false,
-                    message: "Data not available yet"
-                })
-            } else if(status === "0"){
-                for(let i = 0; i < detailDataApplicants.length; i++){
-                    if(pageCount !== 0 && pageCount % 10 === 0){
-                        setPage++;
-                    }
-                    detailDataApplicants[i].page = setPage
-                    pageCount++;
+    let temp = [];
+
+    let pendingCounter = 0;
+    let pagePending = 0;
+
+    let acceptedCounter = 0;
+    let pageAccepted = 0;
+    
+    let rejectedCounter = 0;
+    let pageRejected = 0;
+
+    let onholdCounter = 0;
+    let pageOnhold = 0;
+
+    campaignRef.doc(idCampaign).get().then((data) => {
+        const applicantsInCampaign = data.data().applicants
+
+        applicantsInCampaign.forEach((dataApplicant) => {
+            applicantRef.doc(dataApplicant.id).get().then((details) => {
+                if(details.statusApplicant === "pending"){
+
                 }
-                campaignRef.doc(idCampaign).update({applicants: detailDataApplicants, pageNumber: "1"})
-                res.status(200).send({
-                    error: false,
-                    message: "Success giving number page"
-                })
-            } else if(status === "1"){
-                res.status(200).send({
-                    error: true,
-                    message: "Giving pageNumber has been done"
-                })
-            } else {
-                res.status(500).send({
-                    error: true,
-                    message: "Internal server error"
-                })
-            }
+            })
         })
+
+    })
+
+    let givePageNumber = async() => {
+        try{
+            campaignRef.doc(idCampaign).get().then((data) => {
+                const detailDataApplicants = data.data().applicants;
+                const status = data.data().pageNumber;
+                if(detailDataApplicants === [] || detailDataApplicants === undefined){
+                    res.status(200).send({
+                        error: false,
+                        message: "Data not available yet"
+                    })
+                } 
+                detailDataApplicants.forEach((data) => {
+                    const length = temp.length
+                    if(length === 0){
+                        temp.push(data)
+                    } else if(data.score < temp[length-1].score){
+                        temp.push(data)
+                    } else {
+                        for(let i = 0; i < length; i++){
+                            if(data.score >= temp[i].score){
+                                temp.splice(i,0,data)
+                                i = length
+                            }
+                        }
+                    }
+                    counter++;
+
+                    if(counter === detailDataApplicants.length){
+                        const process = async() => {
+                        for(let i = 0; i < temp.length; i++){
+                                await applicantRef.doc(temp[i].id).get().then((data) => {
+                                    console.log(data.data().statusApplicant)
+                                    if(data.data().statusApplicant === "pending"){
+                                        if(pendingCounter % 10 === 0){
+                                            pagePending++;
+                                        }
+                                        temp[i].page = pagePending;
+                                        pendingCounter++;
+
+                                    } else if(data.data().statusApplicant === "accepted"){
+                                        if(acceptedCounter % 10 === 0){
+                                            pageAccepted++;
+                                        }
+                                        temp[i].page = pageAccepted;
+                                        acceptedCounter++;
+                                    }else if(data.data().statusApplicant === "rejected"){
+                                        if(rejectedCounter % 10 === 0){
+                                            pageRejected++;
+                                        }
+                                        temp[i].page = pageRejected;
+                                        rejectedCounter++;
+                                    }else if(data.data().statusApplicant === "onhold"){
+                                        if(onholdCounter % 10 === 0){
+                                            pageOnhold++;
+                                        }
+                                        temp[i].page = pageOnhold;
+                                        onholdCounter++;
+                                    }
+                                })
+                            }
+                        }
+                        
+                        const main = async() => {
+                            await process();
+                            campaignRef.doc(idCampaign).update({applicants: temp})
+                        }
+
+                        main();
+                        res.status(200).send({
+                            error: false,
+                            message: "Success giving number page"
+                        })
+                    }
+                })
+            })
+        } catch(e) {
+            res.status(500).send({
+                error: true,
+                message: "Internal Server error"
+            })    
+        }
     }
 
     givePageNumber();
@@ -304,7 +380,6 @@ route.post('/', auth, (req,res) => {
             penggalangDana: penggalangDana,
             photoUrl,
             process: "0",
-            pageNumber: "0",
             SnK,
             applicants: [],
             idGSheet: idgsheet
@@ -343,7 +418,6 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                     penggalangDana: campaignData.penggalangDana,
                     photoUrl: campaignData.photoUrl,
                     processData: campaignData.process,
-                    processPageNumber: campaignData.pageNumber,
                     applicantsCount: 0,
                     acceptedApplicants: 0,
                     rejectedApplicants: 0,
@@ -393,7 +467,6 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                                 penggalangDana: campaignData.penggalangDana,
                                 photoUrl: campaignData.photoUrl,
                                 processData: campaignData.process,
-                                processPageNumber: campaignData.pageNumber,
                                 applicantsCount: applicantsNumber,
                                 acceptedApplicants: counterAccepted,
                                 rejectedApplicants: counterRejected,
@@ -420,7 +493,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
 })
 
 //getting all pending applicants from specific scholarship program
-route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
+route.get('/:id/applicants', checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
 
@@ -541,7 +614,6 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                         }
                                     }
                                 }
-
                                 if(pageNumber !== undefined){
                                     for(let i = 0; i < applicantsInCampaign.length; i++){
                                         for(let j = 0; j < listApplicants.length; j++){
@@ -552,7 +624,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                         }
                                     }
                                 }
-                                
+
                                 res.status(200).send({
                                     error: false,
                                     message: "All applicants successfully fetched",

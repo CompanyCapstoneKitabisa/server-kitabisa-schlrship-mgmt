@@ -5,7 +5,6 @@ const db = dbconf.firestore();
 
 function auth (req,res,next){
     const token = req.header('authToken');
-    const token_decode = jwt_decode(token)
     try{
         if(!token){
             res.status(403).send({
@@ -13,6 +12,7 @@ function auth (req,res,next){
             })
         } else {
             //check if token still valid or already expired
+            const token_decode = jwt_decode(token)
             const JWTTime = new Date(token_decode.exp * 1000)
             const localTime = new Date()
             if((localTime - JWTTime) > -1){ //if token expired
