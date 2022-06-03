@@ -420,16 +420,18 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
 })
 
 //getting all pending applicants from specific scholarship program
-route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
+route.get('/:id/applicants', checkCampaign, (req,res) => {
+    const campaignRef = db.collection('campaigns');
+    const applicantRef = db.collection('applicants');
+
     const id = req.params.id;
     const status = req.query.status;
     const nama = req.query.nama;
     const statusRumah = req.query.statusRumah;
     const statusData = req.query.statusData;
     const provinsi = req.query.provinsi;
-    const campaignRef = db.collection('campaigns');
-    const applicantRef = db.collection('applicants');
     const pageNumber = req.query.page
+    
     let listApplicants = [];
     let counter = 0;
 
@@ -437,304 +439,137 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
         campaignRef.doc(id).get().then((data) => {
             const campaignName = data.data().name
             if(id === data.id){
-                if(pageNumber === undefined || pageNumber == ""){
-                    const applicantsInCampaign = data.data().applicants
-                    if(applicantsInCampaign.length > 0){
-                        applicantsInCampaign.forEach((d) => {
-                            applicantRef.doc(d.id).get().then((userData) => {
+                const applicantsInCampaign = data.data().applicants
+                if(applicantsInCampaign.length > 0){
+                    applicantsInCampaign.forEach((d) => {
+                        applicantRef.doc(d.id).get().then((userData) => {
 
-                                const userDataDetails = userData.data()
-                                
-                                if(status === "" || status === undefined){
-                                    const dataSend = {
-                                        id: userData.id,
-                                        photoURL: userDataDetails.bioDiri.fotoDiri,
-                                        name: userDataDetails.bioDiri.namaLengkap,
-                                        provinsi: userDataDetails.bioDiri.provinsi,
-                                        kota: userDataDetails.bioDiri.kotaKabupaten,
-                                        university: userDataDetails.bioPendidikan.NPSN,
-                                        score: userDataDetails.scoreApplicant.total,
-                                        statusApplicant: userDataDetails.statusApplicant,
-                                        statusData: userDataDetails.statusData,
-                                        statusRumah: userDataDetails.statusRumah
-                                        }  
-                                        
-                                    const length = listApplicants.length;
-
-                                    if(length === 0){
-                                        listApplicants.push(dataSend)
-                                    }else if(dataSend.score < listApplicants[length-1].score){
-                                        listApplicants.push(dataSend)
-                                    }else{
-                                        for(let i = 0; i < length; i++){
-                                            if(dataSend.score >= listApplicants[i].score){
-                                                listApplicants.splice(i,0,dataSend)
-                                                i = length
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    if(status === "pending"){
-                                        if(userDataDetails.statusApplicant === "pending"){
-                                            const dataSend = {
-                                                id: userData.id,
-                                                photoURL: userDataDetails.bioDiri.fotoDiri,
-                                                name: userDataDetails.bioDiri.namaLengkap,
-                                                provinsi: userDataDetails.bioDiri.provinsi,
-                                                kota: userDataDetails.bioDiri.kotaKabupaten,
-                                                university: userDataDetails.bioPendidikan.NPSN,
-                                                score: userDataDetails.scoreApplicant.total,
-                                                statusApplicant: userDataDetails.statusApplicant,
-                                                statusData: userDataDetails.statusData,
-                                                statusRumah: userDataDetails.statusRumah
-                                                }  
-                                                
-                                            const length = listApplicants.length;
-        
-                                            if(length === 0){
-                                                listApplicants.push(dataSend)
-                                            }else if(dataSend.score < listApplicants[length-1].score){
-                                                listApplicants.push(dataSend)
-                                            }else{
-                                                for(let i = 0; i < length; i++){
-                                                    if(dataSend.score >= listApplicants[i].score){
-                                                        listApplicants.splice(i,0,dataSend)
-                                                        i = length
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else if (status === "accepted"){
-                                        if(userDataDetails.statusApplicant === "accepted"){
-                                            const dataSend = {
-                                                id: userData.id,
-                                                photoURL: userDataDetails.bioDiri.fotoDiri,
-                                                name: userDataDetails.bioDiri.namaLengkap,
-                                                provinsi: userDataDetails.bioDiri.provinsi,
-                                                kota: userDataDetails.bioDiri.kotaKabupaten,
-                                                university: userDataDetails.bioPendidikan.NPSN,
-                                                score: userDataDetails.scoreApplicant.total,
-                                                statusApplicant: userDataDetails.statusApplicant,
-                                                statusData: userDataDetails.statusData,
-                                                statusRumah: userDataDetails.statusRumah
-                                                }  
-                                                
-                                            const length = listApplicants.length;
-        
-                                            if(length === 0){
-                                                listApplicants.push(dataSend)
-                                            }else if(dataSend.score < listApplicants[length-1].score){
-                                                listApplicants.push(dataSend)
-                                            }else{
-                                                for(let i = 0; i < length; i++){
-                                                    if(dataSend.score >= listApplicants[i].score){
-                                                        listApplicants.splice(i,0,dataSend)
-                                                        i = length
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else if (status === "rejected"){
-                                        if(userDataDetails.statusApplicant === "rejected"){
-                                            const dataSend = {
-                                                id: userData.id,
-                                                photoURL: userDataDetails.bioDiri.fotoDiri,
-                                                name: userDataDetails.bioDiri.namaLengkap,
-                                                provinsi: userDataDetails.bioDiri.provinsi,
-                                                kota: userDataDetails.bioDiri.kotaKabupaten,
-                                                university: userDataDetails.bioPendidikan.NPSN,
-                                                score: userDataDetails.scoreApplicant.total,
-                                                statusApplicant: userDataDetails.statusApplicant,
-                                                statusData: userDataDetails.statusData,
-                                                statusRumah: userDataDetails.statusRumah
-                                                }  
-                                                
-                                            const length = listApplicants.length;
-        
-                                            if(length === 0){
-                                                listApplicants.push(dataSend)
-                                            }else if(dataSend.score < listApplicants[length-1].score){
-                                                listApplicants.push(dataSend)
-                                            }else{
-                                                for(let i = 0; i < length; i++){
-                                                    if(dataSend.score >= listApplicants[i].score){
-                                                        listApplicants.splice(i,0,dataSend)
-                                                        i = length
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else if(status === "onhold"){
-                                        if(userDataDetails.statusApplicant === "onhold"){
-                                            const dataSend = {
-                                                id: userData.id,
-                                                photoURL: userDataDetails.bioDiri.fotoDiri,
-                                                name: userDataDetails.bioDiri.namaLengkap,
-                                                provinsi: userDataDetails.bioDiri.provinsi,
-                                                kota: userDataDetails.bioDiri.kotaKabupaten,
-                                                university: userDataDetails.bioPendidikan.NPSN,
-                                                score: userDataDetails.scoreApplicant.total,
-                                                statusApplicant: userDataDetails.statusApplicant,
-                                                statusData: userDataDetails.statusData,
-                                                statusRumah: userDataDetails.statusRumah
-                                                }  
-                                                
-                                            const length = listApplicants.length;
-        
-                                            if(length === 0){
-                                                listApplicants.push(dataSend)
-                                            }else if(dataSend.score < listApplicants[length-1].score){
-                                                listApplicants.push(dataSend)
-                                            }else{
-                                                for(let i = 0; i < length; i++){
-                                                    if(dataSend.score >= listApplicants[i].score){
-                                                        listApplicants.splice(i,0,dataSend)
-                                                        i = length
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                counter++;
-                                 //if it's already the last data, then send it
-                                 if(counter === applicantsInCampaign.length){
+                            const userDataDetails = userData.data()
+                            const dataSend = {
+                                id: userData.id,
+                                photoURL: userDataDetails.bioDiri.fotoDiri,
+                                name: userDataDetails.bioDiri.namaLengkap,
+                                provinsi: userDataDetails.bioDiri.provinsi,
+                                kota: userDataDetails.bioDiri.kotaKabupaten,
+                                university: userDataDetails.bioPendidikan.NPSN,
+                                score: userDataDetails.scoreApplicant.total,
+                                statusApplicant: userDataDetails.statusApplicant,
+                                statusData: userDataDetails.statusData,
+                                statusRumah: userDataDetails.statusRumah,
+                                page: d.page,
+                                }  
                                     
-                                    if(nama !== undefined){
-                                        for(let i = 0; i < applicantsInCampaign.length; i++){
-                                            for(let j = 0; j < listApplicants.length; j++){
-                                                const lower_nama = nama.toLowerCase() //name from query
-                                                const namaInsideList = listApplicants[j].name; //name from array
-                                                const lower_namaInsideList = namaInsideList.toLowerCase();
-                                                if(!lower_namaInsideList.includes(lower_nama)){
-                                                    listApplicants.splice(j,1)
-                                                }
-                                            }
-                                        }
-                                    } 
+                            const length = listApplicants.length;
 
-                                    if(provinsi !== undefined){
-                                        for(let i = 0; i < applicantsInCampaign.length; i++){
-                                            for(let j = 0; j < listApplicants.length; j++){
-                                                const lower_provinsi = provinsi.toLowerCase() //name from query
-                                                const provinsiInsideList = listApplicants[j].provinsi; //name from array
-                                                const lower_provinsiInsideList = provinsiInsideList.toLowerCase();
-                                                if(!lower_provinsiInsideList.includes(lower_provinsi)){
-                                                    listApplicants.splice(j,1)
-                                                }
-                                            }
-                                        }
+                            if(length === 0){
+                                listApplicants.push(dataSend)
+                            }else if(dataSend.score < listApplicants[length-1].score){
+                                listApplicants.push(dataSend)
+                            }else{
+                                for(let i = 0; i < length; i++){
+                                    if(dataSend.score >= listApplicants[i].score){
+                                        listApplicants.splice(i,0,dataSend)
+                                        i = length
                                     }
-
-                                    if(statusRumah !== undefined){
-                                        for(let i = 0; i < applicantsInCampaign.length; i++){
-                                            for(let j = 0; j < listApplicants.length; j++){
-                                                const lower_statusRumah = statusRumah.toLowerCase() //name from query
-                                                const SRInsideList = listApplicants[j].statusRumah; //name from array
-                                                const lower_SRInsideList = SRInsideList.toLowerCase();
-                                                if(lower_SRInsideList !== lower_statusRumah){
-                                                    listApplicants.splice(j,1)
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if(statusData !== undefined){
-                                        for(let i = 0; i < applicantsInCampaign.length; i++){
-                                            for(let j = 0; j < listApplicants.length; j++){
-                                                const lower_statusData = statusData.toLowerCase() //name from query
-                                                const SDInsideList = listApplicants[j].statusData; //name from array
-                                                const lower_SDInsideList = SDInsideList.toLowerCase();
-                                                if(lower_SDInsideList !== lower_statusData){
-                                                    listApplicants.splice(j,1)
-                                                }
-                                            }
-                                        }
-                                    }
-                                        
-                                    res.status(200).send({
-                                        error: false,
-                                        message: "All applicants successfully fetched",
-                                        campaign: campaignName,
-                                        listApplicants
-                                    })
                                 }
-                            })
-                        })
-                    }else{
-                        res.status(200).send({
-                            error: false,
-                            message: "All applicants successfully fetched",
-                            campaign: campaignName,
-                            listApplicants
-                        })
-                    }
-                } else { //handling if there's page number defined
-                    const applicantsInCampaign = data.data().applicants
-                    let totalDataFound = 0;
-                    for(let i = 0; i < applicantsInCampaign.length; i++){
-                        if(applicantsInCampaign[i].page == pageNumber){
-                            totalDataFound++;
-                        }
-                    }
-                    if(totalDataFound > 0){
-                        applicantsInCampaign.forEach((data) => {
-                            if(data.page == pageNumber){
-                                applicantRef.doc(data.id).get().then((userData) => {
-                                    const userDataDetails = userData.data()
+                            }
 
-                                    if(userDataDetails.statusApplicant === "pending"){
-                                        const dataSend = {
-                                            id: userData.id,
-                                            photoURL: userDataDetails.bioDiri.fotoDiri,
-                                            name: userDataDetails.bioDiri.namaLengkap,
-                                            provinsi: userDataDetails.bioDiri.provinsi,
-                                            kota: userDataDetails.bioDiri.kotaKabupaten,
-                                            university: userDataDetails.bioPendidikan.NPSN,
-                                            score: userDataDetails.scoreApplicant.total,
-                                            statusApplicant: userDataDetails.statusApplicant,
-                                            statusData: userDataDetails.statusData,
-                                            statusRumah: userDataDetails.statusRumah
-                                            }  
-                                            
-                                        const length = listApplicants.length;
-
-                                        if(length === 0){
-                                            listApplicants.push(dataSend)
-                                        }else if(dataSend.score < listApplicants[length-1].score){
-                                            listApplicants.push(dataSend)
-                                        }else{
-                                            for(let i = 0; i < length; i++){
-                                                if(dataSend.score >= listApplicants[i].score){
-                                                    listApplicants.splice(i,0,dataSend)
-                                                    i = length
-                                                }
+                            counter++;
+                            //if it's already the last data, then send it
+                            if(counter === applicantsInCampaign.length){
+                                if(status !== undefined){
+                                    for(let i = 0; i < applicantsInCampaign.length; i++){
+                                        for(let j = 0; j < listApplicants.length; j++){
+                                            const lower_status = status.toLowerCase() //status from query
+                                            const statusInsideList = listApplicants[j].statusApplicant; //status from array
+                                            const lower_statusInsideList = statusInsideList.toLowerCase();
+                                            if(lower_statusInsideList !== lower_status){
+                                                listApplicants.splice(j,1)
                                             }
                                         }
                                     }
-                                    counter++;
-                                    //if it's already the last data, then send it\
-                                    if(counter === totalDataFound){
-                                        res.status(200).send({
-                                            error: false,
-                                            message: "All applicants successfully fetched",
-                                            campaign: campaignName,
-                                            listApplicants
-                                        })
+                                }
+
+                                if(nama !== undefined){
+                                    for(let i = 0; i < applicantsInCampaign.length; i++){
+                                        for(let j = 0; j < listApplicants.length; j++){
+                                            const lower_nama = nama.toLowerCase() //name from query
+                                            const namaInsideList = listApplicants[j].name; //name from array
+                                            const lower_namaInsideList = namaInsideList.toLowerCase();
+                                            if(!lower_namaInsideList.includes(lower_nama)){
+                                                listApplicants.splice(j,1)
+                                            }
+                                        }
                                     }
+                                } 
+
+                                if(provinsi !== undefined){
+                                    for(let i = 0; i < applicantsInCampaign.length; i++){
+                                        for(let j = 0; j < listApplicants.length; j++){
+                                            const lower_provinsi = provinsi.toLowerCase() //provinsi from query
+                                            const provinsiInsideList = listApplicants[j].provinsi; //provinsi from array
+                                            const lower_provinsiInsideList = provinsiInsideList.toLowerCase();
+                                            if(!lower_provinsiInsideList.includes(lower_provinsi)){
+                                                listApplicants.splice(j,1)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if(statusRumah !== undefined){
+                                    for(let i = 0; i < applicantsInCampaign.length; i++){
+                                        for(let j = 0; j < listApplicants.length; j++){
+                                            const lower_statusRumah = statusRumah.toLowerCase() //statusRumah from query
+                                            const SRInsideList = listApplicants[j].statusRumah; //statusRumah from array
+                                            const lower_SRInsideList = SRInsideList.toLowerCase();
+                                            if(lower_SRInsideList !== lower_statusRumah){
+                                                listApplicants.splice(j,1)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if(statusData !== undefined){
+                                    for(let i = 0; i < applicantsInCampaign.length; i++){
+                                        for(let j = 0; j < listApplicants.length; j++){
+                                            const lower_statusData = statusData.toLowerCase() //statusData from query
+                                            const SDInsideList = listApplicants[j].statusData; //statusData from array
+                                            const lower_SDInsideList = SDInsideList.toLowerCase();
+                                            if(lower_SDInsideList !== lower_statusData){
+                                                listApplicants.splice(j,1)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if(pageNumber !== undefined){
+                                    for(let i = 0; i < applicantsInCampaign.length; i++){
+                                        for(let j = 0; j < listApplicants.length; j++){
+                                            const pageInList = listApplicants[j].page; //page from array
+                                            if(pageNumber != pageInList){
+                                                listApplicants.splice(j,1)
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                res.status(200).send({
+                                    error: false,
+                                    message: "All applicants successfully fetched",
+                                    campaign: campaignName,
+                                    listApplicants
                                 })
                             }
                         })
-                    } else {
-                        res.status(200).send({
-                            error: false,
-                            message: "All applicants successfully fetched",
-                            campaign: campaignName,
-                            listApplicants
-                        })
-                    }
-                }       
+                    })
+                }else{
+                    res.status(200).send({
+                        error: false,
+                        message: "All applicants successfully fetched",
+                        campaign: campaignName,
+                        listApplicants
+                    })
+                }  
             }else{
                 res.status(500).send({
                     error: true,
