@@ -320,7 +320,7 @@ route.get('/:id/applicants/givePageNumber',auth, checkCampaign,(req,res) => {
 })
 
 //API to get all available campaigns
-route.get('/',auth, (req,res) => {
+route.get('/', auth, (req,res) => {
     const campaignRef = db.collection('campaigns');
     let campaignList = [];
 
@@ -333,17 +333,21 @@ route.get('/',auth, (req,res) => {
                     name: campaignDataDetails.name,
                     penggalangDana: campaignDataDetails.penggalangDana,
                     photoUrl: campaignDataDetails.photoUrl,
-                    SnK: campaignDataDetails.SnK
+                    SnK: campaignDataDetails.SnK,
+                    addedAt: campaignDataDetails.addedAt
                 }
 
                 campaignList.push(fetchedData)
             })
             
             if(campaignList.length !== 0){
+                const sortedArray = sortArray(campaignList, {
+                    by: 'addedAt',
+                })
                 res.status(200).send({
                     error: false,
                     message: "Data successfully fetched",
-                    listCampaign: campaignList
+                    listCampaign: sortedArray
                 })
             } else if(campaignList.length === 0){
                 res.status(200).send({
@@ -382,7 +386,8 @@ route.post('/', auth, (req,res) => {
             process: "0",
             SnK,
             applicants: [],
-            idGSheet: idgsheet
+            idGSheet: idgsheet,
+            addedAt: new Date()
         }
     
         campaignRef.doc().set(sendData)
