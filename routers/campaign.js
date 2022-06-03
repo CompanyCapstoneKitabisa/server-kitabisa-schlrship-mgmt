@@ -420,7 +420,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
 })
 
 //getting all pending applicants from specific scholarship program
-route.get('/:id/applicants', checkCampaign, (req,res) => {
+route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
 
@@ -431,7 +431,7 @@ route.get('/:id/applicants', checkCampaign, (req,res) => {
     const statusData = req.query.statusData;
     const provinsi = req.query.provinsi;
     const pageNumber = req.query.page
-    
+
     let listApplicants = [];
     let counter = 0;
 
