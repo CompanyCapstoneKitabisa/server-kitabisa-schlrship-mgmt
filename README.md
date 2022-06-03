@@ -11,12 +11,9 @@
     1. [Get all available campaigns](#get-all-available-campaigns)
     2. [Post to add new campaign](#post-to-add-new-campaign)
     3. [Get specific scholarship program details](#get-specific-scholarship-program-details)
-    4. [Get all applicants in a specific scholarship program](#get-all-applicants-in-a-specific-scholarship-program)
-    5. [*Getting all rejected applicants from specific scholarship program](#getting-all-rejected-applicants-from-specific-scholarship-program)
-    6. [*Getting all accepted applicants from specific scholarship program](#getting-all-accepted-applicants-from-specific-scholarship-program)
-    7. [Search applicant by name in a specific campaign](#search-applicant-by-name-in-a-specific-campaign)
-    8. [Activating process Data for a campaign](#activating-process-data-for-a-campaign)
-    9. [Activating giving applicants page number](#activating-giving-applicants-page-number)
+    4. [Get applicants in a specific scholarship program](#get-applicants-in-a-specific-scholarship-program)
+    5. [Activating process Data for a campaign](#activating-process-data-for-a-campaign)
+    6. [Activating giving applicants page number](#activating-giving-applicants-page-number)
 5. [Applicants](#applicants)
     1. [Get specific applicants detail](#get-specific-applicants-detail)
     2. [Update specific applicant status](#update-specific-applicant-status)
@@ -185,14 +182,18 @@ if only one of 4 parameter null or ""
 }
 ```
 
-### Get all applicants in a specific scholarship program
+### Get applicants in a specific scholarship program
 - URL
   - /campaigns/{campaign_id}/applicants
 - Method
   - GET
-- URL parameter
-  - id as string
-- Response
+- query parameter (not mandatory)
+  - status as accepted/rejected/onhold/pending,
+  - nama as string,
+  - statusRumah as valid/invalid,
+  - provinsi as string,
+  - pageNumber as string
+- Response (status = accepted)
 ```
 {
     "error": false,
@@ -200,122 +201,30 @@ if only one of 4 parameter null or ""
     "campaign": "Beasiswa Narasi",
     "listApplicants": [
         {
-            "id": "J9iYN3uhsj6EKztz36L5",
+            "id": "p0SXEBa4zwZ00RNqYPKi",
             "photoURL": "https://i.pinimg.com/736x/8e/d6/88/8ed688dd8f994687d33e435f0d54501a.jpg",
-            "name": "Randy Hanjaya",
-            "provinsi": "Banten",
-            "kota": "Tangerang",
-            "university": "Belum ada di dummy om datanya",
-            "score": 310,
-            "statusApplicant": "rejected",
-            "statusData": "valid",
-            "statusRumah": "valid"
-        },
-        {
-            "id": "2HXvNWt3zH3RXQUS05Nm",
-            "photoURL": "https://drive.google.com/open?id=1VttBNnvBvpwRAe3oFyTmqUPfC3EtGEEE",
-            "name": "Sarah agustina",
+            "name": "Agnes valen",
             "provinsi": "Bandung",
             "kota": "Bandung",
-            "university": "Belum ada di dummy om datanya",
-            "score": 270,
+            "university": "33988",
+            "score": 440,
             "statusApplicant": "accepted",
             "statusData": "valid",
-            "statusRumah": "valid"
+            "statusRumah": "valid",
+            "page": 1
         },
         {
-            "id": "7JI2YAbi0FaciZKVQK7v",
+            "id": "Ycu2UbjZ3gN2Cxfndp9L",
             "photoURL": "https://drive.google.com/open?id=1VttBNnvBvpwRAe3oFyTmqUPfC3EtGEEE",
             "name": "Agus Putra Hendrawan",
             "provinsi": "Bali",
             "kota": "Denpasar",
-            "university": "Belum ada di dummy om datanya",
+            "university": "190710193",
             "score": 270,
-            "statusApplicant": "onhold",
-            "statusData": "valid",
-            "statusRumah": "invalid"
-        }
-    ]
-}
-```
-
-### Getting all rejected applicants from specific scholarship program
-- URL
-  - /campaigns/{campaign_id}/rejected
-- Method
-  - GET
-- URL parameter
-  - id as string
-- Response
-```
-{
-    "error": false,
-    "message": "Fetched all rejected applicants",
-    "listApplicants": [
-        {
-            "id": "GrJmUfLpodd1puYULRqT",
-            "name": "Sarah",
-            "university": "ITB",
-            "status": "rejected"
-        }
-    ]
-}
-```
-
-### Getting all accepted applicants from specific scholarship program
-- URL
-  - /campaigns/{campaign_id}/accepted
-- Method
-  - GET
-- URL parameter
-  - id as string
-- Response
-```
-{
-    "error": false,
-    "message": "Fetched all rejected applicants",
-    "listApplicants": [
-        {
-            "id": "rE62vnIjU1XwE6l1f7mR",
-            "name": "Alvin",
-            "university": "UMN",
-            "status": "accepted"
-        },
-        {
-            "id": "yCJOWYTvcsCEY3JFHk0Y",
-            "name": "Randy",
-            "university": "UMN",
-            "status": "accepted"
-        }
-    ]
-}
-```
-
-### Search applicant by name in a specific campaign
-- URL
-  - /campaigns/{id_campaigns}/applicants/{search_string}
-- Method
-  - GET
-- Request parameter
-  - id_campaigns as string 
-  - search_string as string
-- Response
-```
-{
-    "error": false,
-    "message": "Search result",
-    "listApplicants": [
-        {
-            "id": "M79hhdRa9DEptBpXR4qZ",
-            "name": "RaNdy Sukarto",
-            "university": "IPB",
-            "status": "rejected"
-        },
-        {
-            "id": "yCJOWYTvcsCEY3JFHk0Y",
-            "name": "Randy",
-            "university": "UMN",
-            "status": "accepted"
+            "statusApplicant": "accepted",
+            "statusData": "invalid",
+            "statusRumah": "invalid",
+            "page": 1
         }
     ]
 }
@@ -328,8 +237,20 @@ if only one of 4 parameter null or ""
     - GET
 - URL Parameter
     - id_campaign as string
+- Response
+If successfully trigger processData
  ```
- {response to be added}
+ {
+    error: false,
+    message: "All data has already fetched and created"
+ }
+ ```
+ If processData has done before
+ ```
+ {
+    error: true,
+    message: "The data for this campaign has already processed"
+ }
  ```
 
 ### Activating giving applicants page number
@@ -339,8 +260,18 @@ if only one of 4 parameter null or ""
     - GET
  - URL parameter
     - id_campaign as string
+ - Response
+ If successfully done
  ```
- {response to be added}
+     error: false,
+     message: "Success giving number page"
+ ```
+ If giving page number has done before
+ ```
+ {
+    error: true,
+    message: "Giving pageNumber has been done"
+ }
  ```
 
 ## Applicants
