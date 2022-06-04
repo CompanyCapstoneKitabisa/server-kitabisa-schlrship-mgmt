@@ -7,7 +7,8 @@ const score = require('./getApplicantScore');
 const dotenv = require('dotenv');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { default: axios } = require('axios');
-const sortArray = require('sort-array')
+const sortArray = require('sort-array');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 require('dotenv').config();
 
@@ -16,150 +17,270 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
+route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
+    let lastApplicantNumber = req.body.totalApplicant-1;
     let idGSheet = '';
     let scoreApplicant = '';
     let page = 1;
+    let rows = [];
 
-    let processApplicantData = async() => {
+    let configSheet = async() => {
         await campaignRef.doc(idCampaign).get().then((data) => {
             idGSheet = data.data().idGSheet
         })
-
+    
         const doc = new GoogleSpreadsheet(idGSheet);
-
+    
         doc.useServiceAccountAuth({
             client_email: process.env.GSHEET_CLIENT_EMAIL,
             private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
         });
-
+    
         await doc.loadInfo()
-
+    
         const sheet = doc.sheetsByIndex[0];
         
-        const rows = await sheet.getRows();
-        for(let i = 0; i < rows.length; i++){
-            dataUser = {
-                "Provinsi": rows[i]['Provinsi'],
-                "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
-                "Medsos": rows[i]['Akun Sosial Media'],
-                "Status Rumah":  rows[i]['Kepemilikan Rumah'],
-                "NIK": rows[i]['Nomor KTP (NIK)'],
-                "Foto KTP": rows[i]['Foto KTP'],
-                "Foto Rumah": rows[i]['Foto Rumah Jelas'],
-                "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
-                "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
-            }
+        rows = await sheet.getRows();
+    }
+
+    let processApplicantData = async(statusProcess) => {
+        
+        //if it's the first time the data being processed
+        if(statusProcess == 0){
+            for(let i = 0; i < rows.length; i++){
+                dataUser = {
+                    "Provinsi": rows[i]['Provinsi'],
+                    "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
+                    "Medsos": rows[i]['Akun Sosial Media'],
+                    "Status Rumah":  rows[i]['Kepemilikan Rumah'],
+                    "NIK": rows[i]['Nomor KTP (NIK)'],
+                    "Foto KTP": rows[i]['Foto KTP'],
+                    "Foto Rumah": rows[i]['Foto Rumah Jelas'],
+                    "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
+                    "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+                    "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+                    "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+                    "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+                }
+        
+                //sending the data to flask server
+                scoreApplicant = await score(dataUser)
     
-            //sending the data to flask server
-            scoreApplicant = await score(dataUser)
-
-            //prepare the data to be sent to DB
-            const dataInputUser = {
-                bioDiri: { 
-                    NIK: rows[i]['Nomor KTP (NIK)'],
-                    alamat: rows[i]['Alamat Lengkap'],
-                    fotoDiri: rows[i]['Foto Diri'],
-                    fotoKTP: rows[i]['Foto KTP'],
-                    kotaKabupaten: rows[i]['Kabupaten / Kota'],
-                    namaLengkap: rows[i]['Nama lengkap'],
-                    noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
-                    provinsi: rows[i]['Provinsi'],
-                    sosmedAcc: rows[i]['Akun Sosial Media']
-                },
-                bioPendidikan: {
-                    NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
-                    NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
-                    fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
-                    fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
-                    jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
-                    tingkatPendidikan: rows[i]['Tingkat Pendidikan']
-                },
-                lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
-                lampiranPersetujuan: "-",
-                misc: {
-                    beasiswaTerdaftar: idCampaign
-                },
-                motivationLetter: {
-                    ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
-                    ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                    ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                    ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                    fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
-                },
-                notes: "",
-                pengajuanBantuan: {
-                    ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
-                    fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
-                    fotoRumah: rows[i]['Foto Rumah Jelas'],
-                    kebutuhan: rows[i]['Kebutuhan'], 
-                    kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
-                    totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
-                },
-                scoreApplicant: {
-                    total: scoreApplicant.total,
-                    scoreProvinsi: scoreApplicant.scoreProvinsi,
-                    scoreKota: scoreApplicant.scoreKota,
-                    scoreMedsos: scoreApplicant.scoreMedsos,
-                    scoreKepemilikanRumah: scoreApplicant.scoreKepemilikanRumah,
-                    scoreNIK: scoreApplicant.scoreNIK,
-                    scoreRumah: scoreApplicant.scoreRumah,
-                    scoreDana: scoreApplicant.scoreDana,
-                    scoreLatarBelakang: scoreApplicant.scoreLatarBelakang,
-                    scorePerjuangan: scoreApplicant.scorePerjuangan,
-                    scorePenting: scoreApplicant.scorePenting,
-                    scoreKegiatan: scoreApplicant.scoreKegiatan
-                },
-                reviewer: "",
-                statusApplicant: "pending",
-                statusData: scoreApplicant.statusData,
-                statusRumah: scoreApplicant.statusRumah,
-            }
-
-            //adding the data from a row to database
-
-            var docRef = applicantRef.doc();
-            docRef.set(dataInputUser).then(
-                campaignRef.doc(idCampaign).get().then((data) => {
-                    const listApplicants = data.data().applicants
-                    const dataLength = listApplicants.length
-                    const dataPush = {
-                        id: docRef.id,
-                        score: scoreApplicant.total,
-                        page
-                    }
-
-                    //making sorting algorithm for applicant's score
-                    //if it's the first applicant, then immediately insert it
-                    if(dataLength === 0){
-                        listApplicants.push(dataPush)
-                        campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                    } else if(scoreApplicant.total < listApplicants[dataLength-1].score){ //if it's not the first applicant
-                        listApplicants.push(dataPush)
-                        campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                    } else {
-                        for(let i = 0; i < dataLength; i++){
-                            if(scoreApplicant.total >= listApplicants[i].score){ //if curr applicant's score not lower than lowest score in array, then look for position for curr applicant's score
-                                listApplicants.splice(i,0,dataPush)
-                                campaignRef.doc(idCampaign).update({applicants: listApplicants})
-                                i = dataLength
+                //prepare the data to be sent to DB
+                const dataInputUser = {
+                    bioDiri: { 
+                        NIK: rows[i]['Nomor KTP (NIK)'],
+                        alamat: rows[i]['Alamat Lengkap'],
+                        fotoDiri: rows[i]['Foto Diri'],
+                        fotoKTP: rows[i]['Foto KTP'],
+                        kotaKabupaten: rows[i]['Kabupaten / Kota'],
+                        namaLengkap: rows[i]['Nama lengkap'],
+                        noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
+                        provinsi: rows[i]['Provinsi'],
+                        sosmedAcc: rows[i]['Akun Sosial Media']
+                    },
+                    bioPendidikan: {
+                        NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
+                        NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
+                        fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
+                        fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
+                        jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
+                        tingkatPendidikan: rows[i]['Tingkat Pendidikan']
+                    },
+                    lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
+                    lampiranPersetujuan: "-",
+                    misc: {
+                        beasiswaTerdaftar: idCampaign
+                    },
+                    motivationLetter: {
+                        ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+                        ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+                        ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+                        ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+                        fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
+                    },
+                    notes: "",
+                    pengajuanBantuan: {
+                        ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
+                        fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
+                        fotoRumah: rows[i]['Foto Rumah Jelas'],
+                        kebutuhan: rows[i]['Kebutuhan'], 
+                        kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
+                        totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
+                    },
+                    scoreApplicant: {
+                        total: scoreApplicant.total,
+                        scoreProvinsi: scoreApplicant.scoreProvinsi,
+                        scoreKota: scoreApplicant.scoreKota,
+                        scoreMedsos: scoreApplicant.scoreMedsos,
+                        scoreKepemilikanRumah: scoreApplicant.scoreKepemilikanRumah,
+                        scoreNIK: scoreApplicant.scoreNIK,
+                        scoreRumah: scoreApplicant.scoreRumah,
+                        scoreDana: scoreApplicant.scoreDana,
+                        scoreLatarBelakang: scoreApplicant.scoreLatarBelakang,
+                        scorePerjuangan: scoreApplicant.scorePerjuangan,
+                        scorePenting: scoreApplicant.scorePenting,
+                        scoreKegiatan: scoreApplicant.scoreKegiatan
+                    },
+                    reviewer: "",
+                    statusApplicant: "pending",
+                    statusData: scoreApplicant.statusData,
+                    statusRumah: scoreApplicant.statusRumah,
+                    addedAt: new Date()
+                }
+    
+                //adding the data from a row to database
+    
+                var docRef = applicantRef.doc();
+                docRef.set(dataInputUser).then(
+                    campaignRef.doc(idCampaign).get().then((data) => {
+                        const listApplicants = data.data().applicants
+                        const dataLength = listApplicants.length
+                        const dataPush = {
+                            id: docRef.id,
+                            score: scoreApplicant.total,
+                            page
+                        }
+    
+                        //making sorting algorithm for applicant's score
+                        //if it's the first applicant, then immediately insert it
+                        if(dataLength === 0){
+                            listApplicants.push(dataPush)
+                            campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                        } else if(scoreApplicant.total < listApplicants[dataLength-1].score){ //if it's not the first applicant
+                            listApplicants.push(dataPush)
+                            campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                        } else {
+                            for(let i = 0; i < dataLength; i++){
+                                if(scoreApplicant.total >= listApplicants[i].score){ //if curr applicant's score not lower than lowest score in array, then look for position for curr applicant's score
+                                    listApplicants.splice(i,0,dataPush)
+                                    campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                                    i = dataLength
+                                }
                             }
                         }
-                    }
-                })
-            )
+                    })
+                )
+            }
+        } else if(statusProcess == 1){ //if it has been processed before (want to add new applicant)
+            for(let i = lastApplicantNumber; i < rows.length; i++){
+                dataUser = {
+                    "Provinsi": rows[i]['Provinsi'],
+                    "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
+                    "Medsos": rows[i]['Akun Sosial Media'],
+                    "Status Rumah":  rows[i]['Kepemilikan Rumah'],
+                    "NIK": rows[i]['Nomor KTP (NIK)'],
+                    "Foto KTP": rows[i]['Foto KTP'],
+                    "Foto Rumah": rows[i]['Foto Rumah Jelas'],
+                    "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
+                    "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+                    "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+                    "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+                    "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+                }
+        
+                //sending the data to flask server
+                scoreApplicant = await score(dataUser)
+    
+                //prepare the data to be sent to DB
+                const dataInputUser = {
+                    bioDiri: { 
+                        NIK: rows[i]['Nomor KTP (NIK)'],
+                        alamat: rows[i]['Alamat Lengkap'],
+                        fotoDiri: rows[i]['Foto Diri'],
+                        fotoKTP: rows[i]['Foto KTP'],
+                        kotaKabupaten: rows[i]['Kabupaten / Kota'],
+                        namaLengkap: rows[i]['Nama lengkap'],
+                        noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
+                        provinsi: rows[i]['Provinsi'],
+                        sosmedAcc: rows[i]['Akun Sosial Media']
+                    },
+                    bioPendidikan: {
+                        NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
+                        NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
+                        fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
+                        fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
+                        jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
+                        tingkatPendidikan: rows[i]['Tingkat Pendidikan']
+                    },
+                    lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
+                    lampiranPersetujuan: "-",
+                    misc: {
+                        beasiswaTerdaftar: idCampaign
+                    },
+                    motivationLetter: {
+                        ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+                        ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
+                        ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
+                        ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
+                        fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
+                    },
+                    notes: "",
+                    pengajuanBantuan: {
+                        ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
+                        fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
+                        fotoRumah: rows[i]['Foto Rumah Jelas'],
+                        kebutuhan: rows[i]['Kebutuhan'], 
+                        kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
+                        totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
+                    },
+                    scoreApplicant: {
+                        total: scoreApplicant.total,
+                        scoreProvinsi: scoreApplicant.scoreProvinsi,
+                        scoreKota: scoreApplicant.scoreKota,
+                        scoreMedsos: scoreApplicant.scoreMedsos,
+                        scoreKepemilikanRumah: scoreApplicant.scoreKepemilikanRumah,
+                        scoreNIK: scoreApplicant.scoreNIK,
+                        scoreRumah: scoreApplicant.scoreRumah,
+                        scoreDana: scoreApplicant.scoreDana,
+                        scoreLatarBelakang: scoreApplicant.scoreLatarBelakang,
+                        scorePerjuangan: scoreApplicant.scorePerjuangan,
+                        scorePenting: scoreApplicant.scorePenting,
+                        scoreKegiatan: scoreApplicant.scoreKegiatan
+                    },
+                    reviewer: "",
+                    statusApplicant: "pending",
+                    statusData: scoreApplicant.statusData,
+                    statusRumah: scoreApplicant.statusRumah,
+                    addedAt: new Date()
+                }
+
+                var docRef = applicantRef.doc();
+
+                docRef.set(dataInputUser).then(
+                    campaignRef.doc(idCampaign).get().then((data) => {
+                        const listApplicants = data.data().applicants
+                        const dataLength = listApplicants.length
+                        const dataPush = {
+                            id: docRef.id,
+                            score: scoreApplicant.total,
+                            page
+                        }
+
+                        if(scoreApplicant.total < listApplicants[dataLength-1].score){
+                            listApplicants.push(dataPush)
+                            campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                        }else{
+                            for(i = 0; i < dataLength; i++){
+                                if(scoreApplicant.total <= listApplicants[i].score){
+                                    listApplicants.splice(i,0,dataPush)
+                                    campaignRef.doc(idCampaign).update({applicants: listApplicants})
+                                    i = dataLength
+                                }
+                            }
+                        }
+                    })
+                )
+            }
         }
     }
 
-    const updateCampaignProcess = async() => {
+    const inputingListUser = async(statusProcess) => {
         try{ 
-            await processApplicantData()
+            await processApplicantData(statusProcess)
             campaignRef.doc(idCampaign).update({process: "1"})
             res.status(201).send({
                 error: false,
@@ -173,33 +294,57 @@ route.get('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
         }
     }
 
-    //checking if the process for a campaign has already done
-    campaignRef.doc(idCampaign).get().then((data) => {
-        try{
-            if(data.data().process === "0"){
-                updateCampaignProcess();
-            } else if(data.data().process === "1"){
-                res.status(200).send({
-                    error: true,
-                    message: "The data for this campaign has already processed"
-                })
-            } else {
-                res.status(500).send({
-                    error: true,
-                    message: "Unknown process status"
-                })
-            }
+    const updatingListUser = async(statusProcess) => {
+        try{ 
+            await processApplicantData(statusProcess)
+            res.status(201).send({
+                error: false,
+                message: "All new data has already fetched and created"
+            })
         } catch (e) {
-            res.status(500).send({
+            res.status(404).send({
                 error: true,
-                message: "Internal server error"
+                message: e.message
             })
         }
-    })
+    }
+
+    //checking if the process for a campaign has already done
+    const main = async() => {
+        await configSheet();
+        campaignRef.doc(idCampaign).get().then((data) => {
+            try{
+                if(lastApplicantNumber == rows.length){
+                    res.status(200).send({
+                        error: false,
+                        message: "No new applicant(s)"
+                    })
+                } else if(data.data().process === "0"){
+                    const statusProcess = data.data().process;
+                    inputingListUser(statusProcess);
+                } else if(data.data().process === "1"){
+                    const statusProcess = data.data().process;
+                    updatingListUser(statusProcess);
+                } else {
+                    res.status(500).send({
+                        error: true,
+                        message: "Unknown process status"
+                    })
+                }
+            } catch (e) {
+                res.status(500).send({
+                    error: true,
+                    message: e.message
+                })
+            }
+        })
+    }
+
+    main();
 })
 
 
-route.get('/:id/applicants/givePageNumber',auth, checkCampaign,(req,res) => {
+route.get('/:id/applicants/givePageNumber', auth, checkCampaign,(req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
 
@@ -219,19 +364,6 @@ route.get('/:id/applicants/givePageNumber',auth, checkCampaign,(req,res) => {
 
     let onholdCounter = 0;
     let pageOnhold = 0;
-
-    campaignRef.doc(idCampaign).get().then((data) => {
-        const applicantsInCampaign = data.data().applicants
-
-        applicantsInCampaign.forEach((dataApplicant) => {
-            applicantRef.doc(dataApplicant.id).get().then((details) => {
-                if(details.statusApplicant === "pending"){
-
-                }
-            })
-        })
-
-    })
 
     let givePageNumber = async() => {
         try{
@@ -498,7 +630,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
 })
 
 //getting all pending applicants from specific scholarship program
-route.get('/:id/applicants', checkCampaign, (req,res) => {
+route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
 
@@ -659,6 +791,123 @@ route.get('/:id/applicants', checkCampaign, (req,res) => {
             message: "Internal server error"
         })
     }
+})
+
+//API for getting CSV of accepted applicants
+route.get('/:id/downloadResult', auth, checkCampaign, (req,res) => {
+    campaignRef = db.collection('campaigns')
+    applicantRef = db.collection('applicants')
+    const idCampaign = req.params.id
+    let counter = 0;
+    let listApplicantsAcc = [];
+
+    campaignRef.doc(idCampaign).get().then((dataCampaign) => {
+        const listApplicants = dataCampaign.data().applicants
+        const namaCampaign = dataCampaign.data().name
+        listApplicants.forEach((dataApplicant) => [
+            applicantRef.doc(dataApplicant.id).get().then((data) => {
+                const detailDataApplicant = data.data()
+                
+                if(detailDataApplicant.statusApplicant === "accepted"){
+                    listApplicantsAcc.push(detailDataApplicant)
+                } 
+                counter++;
+
+                if(counter === listApplicants.length){
+                    const makeCSV = async(date) => {
+                        try{
+                            const sortByScore = sortArray(listApplicantsAcc, {
+                                by: 'scoreApplicant.total'
+                            })
+
+                        let localPath = `Records/`
+                        let fileName = `Accepted_Applicants_${namaCampaign}_${date}.csv`
+                        let fullPath = localPath.concat(fileName)
+                        
+                        const csvWriter = createCsvWriter({
+                            path: fullPath,
+                            headerIdDelimiter: '.',
+                            header: [
+                              {id: 'bioDiri.NIK', title: 'NIK'},
+                              {id: 'bioDiri.alamat', title: 'alamat'},
+                              {id: 'bioDiri.fotoDiri', title: 'fotoDiri'},
+                              {id: 'bioDiri.fotoKTP', title: 'fotoKTP'},
+                              {id: 'bioDiri.kotaKabupaten', title: 'kota / Kabupaten'},
+                              {id: 'bioDiri.namaLengkap', title: 'Nama Lengkap'},
+                              {id: 'bioDiri.noTlp', title: 'noTlp'},
+                              {id: 'bioDiri.provinsi', title: 'provinsi'},
+                              {id: 'bioDiri.sosmedAcc', title: 'sosmedAcc'},
+                              {id: 'bioPendidikan.NIM', title: 'NIM'},
+                              {id: 'bioPendidikan.NPSN', title: 'NPSN'},
+                              {id: 'bioPendidikan.fotoIPKAtauRapor', title: 'Foto IPK / Rapor'},
+                              {id: 'bioPendidikan.fotoKTM', title: 'fotoKTM'},
+                              {id: 'bioPendidikan.jurusan', title: 'jurusan'},
+                              {id: 'bioPendidikan.tingkatPendidikan', title: 'Tingkat Pendidikan'},
+                              {id: 'lampiranTambahan', title: 'Lampiran Tambahan'},
+                              {id: 'lampiranPersetujuan', title: 'Lampiran Persetujuan'},
+                              {id: 'misc.beasiswaTerdaftar', title: 'Beasiswa Terdaftar'},
+                              {id: 'motivationLetter.ceritaKegiatanYangDigeluti', title: 'Cerita Kegiatan Yang Digeluti'},
+                              {id: 'motivationLetter.ceritaLatarBelakang', title: 'Cerita Latar Belakang'},
+                              {id: 'motivationLetter.ceritaPentingnyaBeasiswa', title: 'Cerita Pentingnya Beasiswa'},
+                              {id: 'motivationLetter.ceritaPerjuangan', title: 'Cerita Perjuangan'},
+                              {id: 'motivationLetter.fotoBuktiKegiatan', title: 'Foto Bukti Kegiatan'},
+                              {id: 'notes', title: 'Notes'},
+                              {id: 'pengajuanBantuan.ceritaPenggunaanDana', title: 'Cerita Penggunaan Dana'},
+                              {id: 'pengajuanBantuan.fotoBuktiTunggakan', title: 'Foto Bukti Tunggakan'},
+                              {id: 'pengajuanBantuan.fotoRumah', title: 'Foto Rumah'},
+                              {id: 'pengajuanBantuan.kebutuhan', title: 'kebutuhan'},
+                              {id: 'pengajuanBantuan.kepemilikanRumah', title: 'Status kepemilikan Rumah'},
+                              {id: 'pengajuanBantuan.totalBiaya', title: 'Total Biaya'},
+                              {id: 'scoreApplicant.total', title: 'Score Total'},
+                              {id: 'statusData', title: 'Status Data'},
+                              {id: 'statusRumah', title: 'Status Rumah'},
+                            ]
+                        });
+                        csvWriter.writeRecords(sortByScore);
+
+                        return fileName;
+
+                        }catch(e){
+                            res.status(500).send({
+                                error: true,
+                                message: e.message
+                            })
+                        }
+                    }
+
+                    const main = async() => {
+                        const date = new Date()
+                        let year = date.getFullYear() + "";
+                        let month = date.getMonth() + "";
+                        let day = date.getDate() + "";
+                        let ID = year.concat(month).concat(day)
+
+                        const fileName = await makeCSV(ID);
+                        
+                        var defaultStorage = dbconf.storage()
+                        
+                        var bucket = defaultStorage.bucket('gs://kitabisa-schlrship-filter.appspot.com')
+                        
+                        bucket.upload( `Records/${fileName}`, {destination: `Records/${fileName}`})
+
+                        const options = {
+                            version: 'v4',
+                            action: 'read',
+                            expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+                          };
+                        const getFileURL= await bucket.file(fileName).getSignedUrl(options)
+
+                        res.status(200).send({
+                            error: false,
+                            fileDownload: getFileURL
+                        })
+                    }
+
+                    main();
+                }
+            })
+        ])
+    })
 })
 
 module.exports = route
