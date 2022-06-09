@@ -269,4 +269,5 @@ route.post('/:idApplicant/update',auth,  checkCampaign, (req,res) => {
     }
 })
 
+
 module.exports = route

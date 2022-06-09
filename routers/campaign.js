@@ -17,14 +17,13 @@ const route = express();
 const db = dbconf.firestore();
 
 //To read data from GSheet and send all data needed for prediction to flask. finnally input the data readed to database
-route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
+route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
     const idCampaign = req.params.id;
-    let lastApplicantNumber = req.body.totalApplicant-1;
+    let lastApplicantNumber = 0;
     let idGSheet = '';
     let scoreApplicant = '';
-    let page = 1;
     let rows = [];
 
     let configSheet = async() => {
@@ -142,7 +141,6 @@ route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
                         const dataPush = {
                             id: docRef.id,
                             score: scoreApplicant.total,
-                            page
                         }
     
                         //making sorting algorithm for applicant's score
@@ -184,7 +182,7 @@ route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
         
                 //sending the data to flask server
                 scoreApplicant = await score(dataUser)
-    
+                console.log(rows[i]['Nama lengkap'])
                 //prepare the data to be sent to DB
                 const dataInputUser = {
                     bioDiri: { 
@@ -249,7 +247,6 @@ route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
                 }
 
                 var docRef = applicantRef.doc();
-
                 docRef.set(dataInputUser).then(
                     campaignRef.doc(idCampaign).get().then((data) => {
                         const listApplicants = data.data().applicants
@@ -257,15 +254,14 @@ route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
                         const dataPush = {
                             id: docRef.id,
                             score: scoreApplicant.total,
-                            page
                         }
-
+                        
                         if(scoreApplicant.total < listApplicants[dataLength-1].score){
                             listApplicants.push(dataPush)
                             campaignRef.doc(idCampaign).update({applicants: listApplicants})
                         }else{
                             for(i = 0; i < dataLength; i++){
-                                if(scoreApplicant.total <= listApplicants[i].score){
+                                if(scoreApplicant.total >= listApplicants[i].score){
                                     listApplicants.splice(i,0,dataPush)
                                     campaignRef.doc(idCampaign).update({applicants: listApplicants})
                                     i = dataLength
@@ -278,14 +274,10 @@ route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
         }
     }
 
-    const inputingListUser = async(statusProcess) => {
+    let inputingListUser = async(statusProcess) => {
         try{ 
             await processApplicantData(statusProcess)
             campaignRef.doc(idCampaign).update({process: "1"})
-            res.status(201).send({
-                error: false,
-                message: "All data has already fetched and created"
-            })
         } catch (e) {
             res.status(404).send({
                 error: true,
@@ -294,13 +286,9 @@ route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
         }
     }
 
-    const updatingListUser = async(statusProcess) => {
+    let updatingListUser = async(statusProcess) => {
         try{ 
             await processApplicantData(statusProcess)
-            res.status(201).send({
-                error: false,
-                message: "All new data has already fetched and created"
-            })
         } catch (e) {
             res.status(404).send({
                 error: true,
@@ -311,145 +299,172 @@ route.get('/:id/applicants/processData', auth, checkCampaign, (req,res) => {
 
     //checking if the process for a campaign has already done
     const main = async() => {
-        await configSheet();
+        await configSheet(); //waiting until connection to sheet established before continuing
+        
         campaignRef.doc(idCampaign).get().then((data) => {
-            try{
-                if(lastApplicantNumber == rows.length){
-                    res.status(200).send({
-                        error: false,
-                        message: "No new applicant(s)"
+            lastApplicantNumber = data.data().applicants.length;
+            if(lastApplicantNumber == rows.length){
+                res.status(200).send({
+                    error: false,
+                    message: "No new applicant(s)"
+                })
+            } else if(lastApplicantNumber > rows.length){
+                res.status(200).send({
+                    error: true,
+                    message: "Data in app more than data in Sheet, there's double data applicant. please restart all process"
+                })
+            }else if(data.data().process === "0"){
+                const process_1 = async()=>{
+                    const statusProcess = data.data().process;
+                    //make it await so the campaignRef below will get newest data
+                    await inputingListUser(statusProcess);
+                    await campaignRef.doc(idCampaign).get().then((data) => {
+                        totalApplicant = data.data().applicants.length
+                        campaignRef.doc(idCampaign).update({totalApplicant: totalApplicant+1})
                     })
-                } else if(data.data().process === "0"){
-                    const statusProcess = data.data().process;
-                    inputingListUser(statusProcess);
-                } else if(data.data().process === "1"){
-                    const statusProcess = data.data().process;
-                    updatingListUser(statusProcess);
-                } else {
-                    res.status(500).send({
-                        error: true,
-                        message: "Unknown process status"
+
+                    res.status(201).send({
+                        error: false,
+                        message: "All data has already fetched and created"
                     })
                 }
-            } catch (e) {
+
+                process_1();
+
+            } else if(data.data().process === "1"){
+                const process_1 = async() => {
+                    const statusProcess = data.data().process;
+                    //make it await so the campaignRef below will get newest data
+                    await updatingListUser(statusProcess);
+                    await campaignRef.doc(idCampaign).get().then((data) => {
+                        totalApplicant = data.data().applicants.length
+                        campaignRef.doc(idCampaign).update({totalApplicant: totalApplicant+1})
+                    })
+
+                    
+                    res.status(201).send({
+                        error: false,
+                        message: "All new applicant already fetched"
+                    })
+                }
+                process_1();
+            } else {
                 res.status(500).send({
                     error: true,
-                    message: e.message
+                    message: "Unknown process status"
                 })
             }
         })
     }
-
     main();
 })
 
 
-route.get('/:id/applicants/givePageNumber', auth, checkCampaign,(req,res) => {
-    const campaignRef = db.collection('campaigns');
-    const applicantRef = db.collection('applicants');
+// route.get('/:id/applicants/givePageNumber', checkCampaign,(req,res) => {
+//     const campaignRef = db.collection('campaigns');
+//     const applicantRef = db.collection('applicants');
 
-    let counter = 0;
-    const idCampaign = req.params.id
+//     let counter = 0;
+//     const idCampaign = req.params.id
 
-    let temp = [];
+//     let temp = [];
 
-    let pendingCounter = 0;
-    let pagePending = 0;
+//     let pendingCounter = 0;
+//     let pagePending = 0;
 
-    let acceptedCounter = 0;
-    let pageAccepted = 0;
+//     let acceptedCounter = 0;
+//     let pageAccepted = 0;
     
-    let rejectedCounter = 0;
-    let pageRejected = 0;
+//     let rejectedCounter = 0;
+//     let pageRejected = 0;
 
-    let onholdCounter = 0;
-    let pageOnhold = 0;
+//     let onholdCounter = 0;
+//     let pageOnhold = 0;
 
-    let givePageNumber = async() => {
-        try{
-            campaignRef.doc(idCampaign).get().then((data) => {
-                const detailDataApplicants = data.data().applicants;
-                const status = data.data().pageNumber;
-                if(detailDataApplicants === [] || detailDataApplicants === undefined){
-                    res.status(200).send({
-                        error: false,
-                        message: "Data not available yet"
-                    })
-                } 
-                detailDataApplicants.forEach((data) => {
-                    const length = temp.length
-                    if(length === 0){
-                        temp.push(data)
-                    } else if(data.score < temp[length-1].score){
-                        temp.push(data)
-                    } else {
-                        for(let i = 0; i < length; i++){
-                            if(data.score >= temp[i].score){
-                                temp.splice(i,0,data)
-                                i = length
-                            }
-                        }
-                    }
-                    counter++;
+//     let givePageNumber = async() => {
+//         try{
+//             campaignRef.doc(idCampaign).get().then((data) => {
+//                 const detailDataApplicants = data.data().applicants;
+//                 const status = data.data().pageNumber;
+//                 if(detailDataApplicants === [] || detailDataApplicants === undefined){
+//                     res.status(200).send({
+//                         error: false,
+//                         message: "Data not available yet"
+//                     })
+//                 } 
+//                 detailDataApplicants.forEach((data) => {
+//                     const length = temp.length
+//                     if(length === 0){
+//                         temp.push(data)
+//                     } else if(data.score < temp[length-1].score){
+//                         temp.push(data)
+//                     } else {
+//                         for(let i = 0; i < length; i++){
+//                             if(data.score >= temp[i].score){
+//                                 temp.splice(i,0,data)
+//                                 i = length
+//                             }
+//                         }
+//                     }
+//                     counter++;
 
-                    if(counter === detailDataApplicants.length){
-                        const process = async() => {
-                        for(let i = 0; i < temp.length; i++){
-                                await applicantRef.doc(temp[i].id).get().then((data) => {
-                                    console.log(data.data().statusApplicant)
-                                    if(data.data().statusApplicant === "pending"){
-                                        if(pendingCounter % 10 === 0){
-                                            pagePending++;
-                                        }
-                                        temp[i].page = pagePending;
-                                        pendingCounter++;
+//                     if(counter === detailDataApplicants.length){
+//                         const process = async() => {
+//                         for(let i = 0; i < temp.length; i++){
+//                                 await applicantRef.doc(temp[i].id).get().then((data) => {
 
-                                    } else if(data.data().statusApplicant === "accepted"){
-                                        if(acceptedCounter % 10 === 0){
-                                            pageAccepted++;
-                                        }
-                                        temp[i].page = pageAccepted;
-                                        acceptedCounter++;
-                                    }else if(data.data().statusApplicant === "rejected"){
-                                        if(rejectedCounter % 10 === 0){
-                                            pageRejected++;
-                                        }
-                                        temp[i].page = pageRejected;
-                                        rejectedCounter++;
-                                    }else if(data.data().statusApplicant === "onhold"){
-                                        if(onholdCounter % 10 === 0){
-                                            pageOnhold++;
-                                        }
-                                        temp[i].page = pageOnhold;
-                                        onholdCounter++;
-                                    }
-                                })
-                            }
-                        }
+//                                     if(data.data().statusApplicant === "pending"){
+//                                         if(pendingCounter % 10 === 0){
+//                                             pagePending++;
+//                                         }
+//                                         temp[i].page = pagePending;
+//                                         pendingCounter++;
+//                                     } else if(data.data().statusApplicant === "accepted"){
+//                                         if(acceptedCounter % 10 === 0){
+//                                             pageAccepted++;
+//                                         }
+//                                         temp[i].page = pageAccepted;
+//                                         acceptedCounter++;
+//                                     }else if(data.data().statusApplicant === "rejected"){
+//                                         if(rejectedCounter % 10 === 0){
+//                                             pageRejected++;
+//                                         }
+//                                         temp[i].page = pageRejected;
+//                                         rejectedCounter++;
+//                                     }else if(data.data().statusApplicant === "onhold"){
+//                                         if(onholdCounter % 10 === 0){
+//                                             pageOnhold++;
+//                                         }
+//                                         temp[i].page = pageOnhold;
+//                                         onholdCounter++;
+//                                     }
+//                                 })
+//                             }
+//                         }
                         
-                        const main = async() => {
-                            await process();
-                            campaignRef.doc(idCampaign).update({applicants: temp})
-                        }
+//                         const main = async() => {
+//                             await process();
+//                             campaignRef.doc(idCampaign).update({applicants: temp})
+//                         }
 
-                        main();
-                        res.status(200).send({
-                            error: false,
-                            message: "Success giving number page"
-                        })
-                    }
-                })
-            })
-        } catch(e) {
-            res.status(500).send({
-                error: true,
-                message: "Internal Server error"
-            })    
-        }
-    }
+//                         main();
+//                         res.status(200).send({
+//                             error: false,
+//                             message: "Success giving number page"
+//                         })
+//                     }
+//                 })
+//             })
+//         } catch(e) {
+//             res.status(500).send({
+//                 error: true,
+//                 message: "Internal Server error"
+//             })    
+//         }
+//     }
 
-    givePageNumber();
-})
+//     givePageNumber();
+// })
 
 //API to get all available campaigns
 route.get('/', auth, (req,res) => {
@@ -519,6 +534,7 @@ route.post('/', auth, (req,res) => {
             SnK,
             applicants: [],
             idGSheet: idgsheet,
+            totalApplicant: 0,
             addedAt: new Date()
         }
     
@@ -561,6 +577,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                     onHoldApplicants: 0,
                     pendingApplicants: 0,
                 }
+
                 res.status(200).send({
                     error: false,
                     message: "Campaign details fetched",
@@ -610,7 +627,6 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
                                 onHoldApplicants: counterOnHold,
                                 pendingApplicants: counterPending
                             }
-    
                             res.status(200).send({
                                 error: false,
                                 message: "Campaign details fetched",
@@ -630,7 +646,7 @@ route.get('/:id', auth, checkCampaign, (req,res) => {
 })
 
 //getting all pending applicants from specific scholarship program
-route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
+route.get('/:id/applicants', auth, checkCampaign, (req,res) => {
     const campaignRef = db.collection('campaigns');
     const applicantRef = db.collection('applicants');
 
@@ -644,6 +660,9 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
 
     let listApplicants = [];
     let counter = 0;
+
+    let pageCounter = 0;
+    let page = 0;
 
     try{
         campaignRef.doc(id).get().then((data) => {
@@ -666,7 +685,6 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                 statusApplicant: userDataDetails.statusApplicant,
                                 statusData: userDataDetails.statusData,
                                 statusRumah: userDataDetails.statusRumah,
-                                page: d.page,
                                 }  
                                     
                             const length = listApplicants.length;
@@ -687,6 +705,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                             counter++;
                             //if it's already the last data, then send it
                             if(counter === applicantsInCampaign.length){
+                                //only include data with requested applicant's status
                                 if(status !== undefined){
                                     for(let i = 0; i < applicantsInCampaign.length; i++){
                                         for(let j = 0; j < listApplicants.length; j++){
@@ -700,6 +719,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                     }
                                 }
 
+                                //only include data with requested applicant's name
                                 if(nama !== undefined){
                                     for(let i = 0; i < applicantsInCampaign.length; i++){
                                         for(let j = 0; j < listApplicants.length; j++){
@@ -713,6 +733,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                     }
                                 } 
 
+                                //only include data with requested applicant's province
                                 if(provinsi !== undefined){
                                     for(let i = 0; i < applicantsInCampaign.length; i++){
                                         for(let j = 0; j < listApplicants.length; j++){
@@ -726,6 +747,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                     }
                                 }
 
+                                //only include data with requested applicant's house status
                                 if(statusRumah !== undefined){
                                     for(let i = 0; i < applicantsInCampaign.length; i++){
                                         for(let j = 0; j < listApplicants.length; j++){
@@ -739,6 +761,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                     }
                                 }
 
+                                //only include data with requested Applicant's data status
                                 if(statusData !== undefined){
                                     for(let i = 0; i < applicantsInCampaign.length; i++){
                                         for(let j = 0; j < listApplicants.length; j++){
@@ -751,6 +774,17 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                         }
                                     }
                                 }
+                                
+                                //giving page based on data position in array
+                                listApplicants.forEach((data) => {
+                                    if(pageCounter % 10 === 0){ //page number will increase after 10
+                                        page++;
+                                    }
+                                    data.page = page;
+                                    pageCounter++;
+                                })
+
+                                //only include data with requested pageNumber
                                 if(pageNumber !== undefined){
                                     for(let i = 0; i < applicantsInCampaign.length; i++){
                                         for(let j = 0; j < listApplicants.length; j++){
@@ -766,7 +800,7 @@ route.get('/:id/applicants',auth, checkCampaign, (req,res) => {
                                     error: false,
                                     message: "All applicants successfully fetched",
                                     campaign: campaignName,
-                                    listApplicants
+                                    listApplicants: listApplicants
                                 })
                             }
                         })
@@ -895,7 +929,7 @@ route.get('/:id/downloadResult', auth, checkCampaign, (req,res) => {
                             action: 'read',
                             expires: Date.now() + 15 * 60 * 1000, // 15 minutes
                           };
-                        const getFileURL= await bucket.file(fileName).getSignedUrl(options)
+                        const getFileURL= await bucket.file(`Records/${fileName}`).getSignedUrl(options)
 
                         res.status(200).send({
                             error: false,
