@@ -25,10 +25,12 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     let idGSheet = '';
     let scoreApplicant = '';
     let rows = [];
+    let namaCampaign = '';
 
     let configSheet = async() => {
         await campaignRef.doc(idCampaign).get().then((data) => {
             idGSheet = data.data().idGSheet
+            namaCampaign = data.data().name
         })
     
         const doc = new GoogleSpreadsheet(idGSheet);
@@ -51,18 +53,18 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
         if(statusProcess == 0){
             for(let i = 0; i < rows.length; i++){
                 dataUser = {
-                    "Provinsi": rows[i]['Provinsi'],
-                    "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
-                    "Medsos": rows[i]['Akun Sosial Media'],
+                    "Provinsi": rows[i]['Provinsi Tempat Tinggal'],
+                    "Kota/Kabupaten": rows[i]['Kota/Kabupaten'],
+                    "Medsos": rows[i]['Akun Media Sosial'],
                     "Status Rumah":  rows[i]['Kepemilikan Rumah'],
-                    "NIK": rows[i]['Nomor KTP (NIK)'],
+                    "NIK": rows[i]['Nomor KTP'],
                     "Foto KTP": rows[i]['Foto KTP'],
                     "Foto Rumah": rows[i]['Foto Rumah Jelas'],
-                    "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
-                    "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                    "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                    "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                    "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+                    "Cerita Penggunaan Dana": rows[i]['Ceritakan Rencana Penggunaan Dana'],
+                    "Cerita Latar Belakang": rows[i]['Ceritakan latar belakang diri dan keluarga'],
+                    "Cerita Perjuangan": rows[i]['Ceritakan perjuangan melanjutkan kuliah/sekolah'],
+                    "Beasiswa Penting": rows[i]['Ceritakan mengapa beasiswa ini penting untuk kamu'],
+                    "Cerita Kegiatan": rows[i]['Ceritakan kegiatan yang digeluti di sekolah/kampus']
                 }
         
                 //sending the data to flask server
@@ -71,44 +73,44 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                 //prepare the data to be sent to DB
                 const dataInputUser = {
                     bioDiri: { 
-                        NIK: rows[i]['Nomor KTP (NIK)'],
+                        NIK: rows[i]['Nomor KTP'],
                         alamat: rows[i]['Alamat Lengkap'],
-                        fotoDiri: rows[i]['Foto Diri'],
+                        fotoDiri: rows[i]['Foto Kamu (Portrait)'],
                         fotoKTP: rows[i]['Foto KTP'],
-                        kotaKabupaten: rows[i]['Kabupaten / Kota'],
-                        namaLengkap: rows[i]['Nama lengkap'],
-                        noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
-                        provinsi: rows[i]['Provinsi'],
-                        sosmedAcc: rows[i]['Akun Sosial Media']
+                        kotaKabupaten: rows[i]['Kota/Kabupaten'],
+                        namaLengkap: rows[i]['Nama Lengkap'],
+                        // noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
+                        provinsi: rows[i]['Provinsi Tempat Tinggal'],
+                        sosmedAcc: rows[i]['Akun Media Sosial']
                     },
                     bioPendidikan: {
-                        NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
-                        NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
-                        fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
+                        NIM: rows[i]['Nomor Identitas di Kampus/Sekolah'],
+                        // NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
+                        fotoIPKAtauRapor: rows[i]['Foto IPK/Raport Sekolah'],
                         fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
                         jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
-                        tingkatPendidikan: rows[i]['Tingkat Pendidikan']
+                        tingkatPendidikan: rows[i]['Tingkat Pendidikan Terakhir (sedang dijalani)']
                     },
-                    lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
-                    lampiranPersetujuan: "-",
+                    lampiranTambahan: rows[i]['Informasi Tambahan'],
+                    lampiranPersetujuan: rows[i]['Lembar persetujuan mengenai data yang disubmit adalah benar & berkenan untuk dibagikan ke pihak yang relevan'],
                     misc: {
-                        beasiswaTerdaftar: idCampaign
+                        beasiswaTerdaftar: namaCampaign
                     },
                     motivationLetter: {
-                        ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
-                        ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                        ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                        ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                        fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
+                        ceritaKegiatanYangDigeluti: rows[i]['Ceritakan kegiatan yang digeluti di sekolah/kampus'],
+                        ceritaLatarBelakang: rows[i]['Ceritakan latar belakang diri dan keluarga'],
+                        ceritaPentingnyaBeasiswa: rows[i]['Ceritakan mengapa beasiswa ini penting untuk kamu'],
+                        ceritaPerjuangan: rows[i]['Ceritakan perjuangan melanjutkan kuliah/sekolah'],
+                        fotoBuktiKegiatan: rows[i]['Foto bukti kegiatan di sekolah/kampus']
                     },
                     notes: "",
                     pengajuanBantuan: {
-                        ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
-                        fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
+                        ceritaPenggunaanDana: rows[i]['Ceritakan Rencana Penggunaan Dana'],
+                        fotoBuktiTunggakan: rows[i]['Foto Bukti Tunggakan/Tagihan'],
                         fotoRumah: rows[i]['Foto Rumah Jelas'],
-                        kebutuhan: rows[i]['Kebutuhan'], 
+                        kebutuhan: rows[i]['Kebutuhan Pembiayaan'], 
                         kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
-                        totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
+                        totalBiaya: rows[i]['Total Biaya yang Dibutuhkan'],
                     },
                     scoreApplicant: {
                         total: scoreApplicant.total,
@@ -166,18 +168,18 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
         } else if(statusProcess == 1){ //if it has been processed before (want to add new applicant)
             for(let i = lastApplicantNumber; i < rows.length; i++){
                 dataUser = {
-                    "Provinsi": rows[i]['Provinsi'],
-                    "Kota/Kabupaten": rows[i]['Kabupaten / Kota'],
-                    "Medsos": rows[i]['Akun Sosial Media'],
+                    "Provinsi": rows[i]['Provinsi Tempat Tinggal'],
+                    "Kota/Kabupaten": rows[i]['Kota/Kabupaten'],
+                    "Medsos": rows[i]['Akun Media Sosial'],
                     "Status Rumah":  rows[i]['Kepemilikan Rumah'],
-                    "NIK": rows[i]['Nomor KTP (NIK)'],
+                    "NIK": rows[i]['Nomor KTP'],
                     "Foto KTP": rows[i]['Foto KTP'],
                     "Foto Rumah": rows[i]['Foto Rumah Jelas'],
-                    "Cerita Penggunaan Dana": rows[i]['Cerita rencana penggunaan dana'],
-                    "Cerita Latar Belakang": rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                    "Cerita Perjuangan": rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                    "Beasiswa Penting": rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                    "Cerita Kegiatan": rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
+                    "Cerita Penggunaan Dana": rows[i]['Ceritakan Rencana Penggunaan Dana'],
+                    "Cerita Latar Belakang": rows[i]['Ceritakan latar belakang diri dan keluarga'],
+                    "Cerita Perjuangan": rows[i]['Ceritakan perjuangan melanjutkan kuliah/sekolah'],
+                    "Beasiswa Penting": rows[i]['Ceritakan mengapa beasiswa ini penting untuk kamu'],
+                    "Cerita Kegiatan": rows[i]['Ceritakan kegiatan yang digeluti di sekolah/kampus']
                 }
         
                 //sending the data to flask server
@@ -186,44 +188,44 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                 //prepare the data to be sent to DB
                 const dataInputUser = {
                     bioDiri: { 
-                        NIK: rows[i]['Nomor KTP (NIK)'],
+                        NIK: rows[i]['Nomor KTP'],
                         alamat: rows[i]['Alamat Lengkap'],
-                        fotoDiri: rows[i]['Foto Diri'],
+                        fotoDiri: rows[i]['Foto Kamu (Portrait)'],
                         fotoKTP: rows[i]['Foto KTP'],
-                        kotaKabupaten: rows[i]['Kabupaten / Kota'],
-                        namaLengkap: rows[i]['Nama lengkap'],
-                        noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
-                        provinsi: rows[i]['Provinsi'],
-                        sosmedAcc: rows[i]['Akun Sosial Media']
+                        kotaKabupaten: rows[i]['Kota/Kabupaten'],
+                        namaLengkap: rows[i]['Nama Lengkap'],
+                        // noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
+                        provinsi: rows[i]['Provinsi Tempat Tinggal'],
+                        sosmedAcc: rows[i]['Akun Media Sosial']
                     },
                     bioPendidikan: {
-                        NIM: rows[i]['Nomor Identitas Mahasiswa (NIM) / NISN'],
-                        NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
-                        fotoIPKAtauRapor: rows[i]['Foto Transkrip Nilai Terbaru'],
+                        NIM: rows[i]['Nomor Identitas di Kampus/Sekolah'],
+                        // NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
+                        fotoIPKAtauRapor: rows[i]['Foto IPK/Raport Sekolah'],
                         fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
                         jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
-                        tingkatPendidikan: rows[i]['Tingkat Pendidikan']
+                        tingkatPendidikan: rows[i]['Tingkat Pendidikan Terakhir (sedang dijalani)']
                     },
-                    lampiranTambahan: rows[i]['Upload PDF dokumen tambahan yang relevan'],
-                    lampiranPersetujuan: "-",
+                    lampiranTambahan: rows[i]['Informasi Tambahan'],
+                    lampiranPersetujuan: rows[i]['Lembar persetujuan mengenai data yang disubmit adalah benar & berkenan untuk dibagikan ke pihak yang relevan'],
                     misc: {
-                        beasiswaTerdaftar: idCampaign
+                        beasiswaTerdaftar: namaCampaign
                     },
                     motivationLetter: {
-                        ceritaKegiatanYangDigeluti: rows[i]['Cerita Mengenai Kegiatan yang Digeluti Saat Ini di Sekolah/Kuliah'],
-                        ceritaLatarBelakang: rows[i]['Cerita Latar Belakang Diri & Keluarga'],
-                        ceritaPentingnyaBeasiswa: rows[i]['Cerita Pentingnya Beasiswa Ini untuk Anda'],
-                        ceritaPerjuangan: rows[i]['Cerita Perjuangan Melanjutkan Pendidikan'],
-                        fotoBuktiKegiatan: rows[i]['Foto Bukti Kegiatan Sekolah/Kuliah']
+                        ceritaKegiatanYangDigeluti: rows[i]['Ceritakan kegiatan yang digeluti di sekolah/kampus'],
+                        ceritaLatarBelakang: rows[i]['Ceritakan latar belakang diri dan keluarga'],
+                        ceritaPentingnyaBeasiswa: rows[i]['Ceritakan mengapa beasiswa ini penting untuk kamu'],
+                        ceritaPerjuangan: rows[i]['Ceritakan perjuangan melanjutkan kuliah/sekolah'],
+                        fotoBuktiKegiatan: rows[i]['Foto bukti kegiatan di sekolah/kampus']
                     },
                     notes: "",
                     pengajuanBantuan: {
-                        ceritaPenggunaanDana: rows[i]['Cerita rencana penggunaan dana'],
-                        fotoBuktiTunggakan: rows[i]['Foto Bukti Tagihan / Tunggakan'],
+                        ceritaPenggunaanDana: rows[i]['Ceritakan Rencana Penggunaan Dana'],
+                        fotoBuktiTunggakan: rows[i]['Foto Bukti Tunggakan/Tagihan'],
                         fotoRumah: rows[i]['Foto Rumah Jelas'],
-                        kebutuhan: rows[i]['Kebutuhan'], 
+                        kebutuhan: rows[i]['Kebutuhan Pembiayaan'], 
                         kepemilikanRumah: rows[i]['Kepemilikan Rumah'],
-                        totalBiaya: rows[i]['Total biaya yang dibutuhkan'],
+                        totalBiaya: rows[i]['Total Biaya yang Dibutuhkan'],
                     },
                     scoreApplicant: {
                         total: scoreApplicant.total,
