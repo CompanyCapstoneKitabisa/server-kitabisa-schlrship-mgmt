@@ -13,7 +13,6 @@
     3. [Get specific scholarship program details](#get-specific-scholarship-program-details)
     4. [Get applicants in a specific scholarship program](#get-applicants-in-a-specific-scholarship-program)
     5. [Activating process Data for a campaign](#activating-process-data-for-a-campaign)
-    6. [Activating giving applicants page number](#activating-giving-applicants-page-number)
 5. [Applicants](#applicants)
     1. [Get specific applicants detail](#get-specific-applicants-detail)
     2. [Update specific applicant status](#update-specific-applicant-status)
@@ -250,27 +249,6 @@ If successfully trigger processData
  {
     error: true,
     message: "The data for this campaign has already processed"
- }
- ```
-
-### Activating giving applicants page number
-- URL
-    - /campaigns/{ID_CAMPAIGN}/applicants/givePageNumber
- - Method
-    - GET
- - URL parameter
-    - id_campaign as string
- - Response
- If successfully done
- ```
-     error: false,
-     message: "Success giving number page"
- ```
- If giving page number has done before
- ```
- {
-    error: true,
-    message: "Giving pageNumber has been done"
  }
  ```
 
