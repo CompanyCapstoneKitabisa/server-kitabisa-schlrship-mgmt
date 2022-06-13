@@ -28,23 +28,30 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     let namaCampaign = '';
 
     let configSheet = async() => {
-        await campaignRef.doc(idCampaign).get().then((data) => {
-            idGSheet = data.data().idGSheet
-            namaCampaign = data.data().name
-        })
-    
-        const doc = new GoogleSpreadsheet(idGSheet);
-    
-        doc.useServiceAccountAuth({
-            client_email: process.env.GSHEET_CLIENT_EMAIL,
-            private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
-        });
-    
-        await doc.loadInfo()
-    
-        const sheet = doc.sheetsByIndex[0];
+        try{
+            await campaignRef.doc(idCampaign).get().then((data) => {
+                idGSheet = data.data().idGSheet
+                namaCampaign = data.data().name
+            })
         
-        rows = await sheet.getRows();
+            const doc = new GoogleSpreadsheet(idGSheet);
+        
+            doc.useServiceAccountAuth({
+                client_email: process.env.GSHEET_CLIENT_EMAIL,
+                private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n')
+            });
+        
+            await doc.loadInfo()
+        
+            const sheet = doc.sheetsByIndex[0];
+            
+            rows = await sheet.getRows();
+        }catch(e){
+            res.status(404).send({
+                error: false,
+                message: e.message
+            })
+        }
     }
 
     let processApplicantData = async(statusProcess) => {
@@ -79,13 +86,13 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                         fotoKTP: rows[i]['Foto KTP'],
                         kotaKabupaten: rows[i]['Kota/Kabupaten'],
                         namaLengkap: rows[i]['Nama Lengkap'],
-                        // noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
+                        noTlp: rows[i]['Nomor Telepon'],
                         provinsi: rows[i]['Provinsi Tempat Tinggal'],
                         sosmedAcc: rows[i]['Akun Media Sosial']
                     },
                     bioPendidikan: {
                         NIM: rows[i]['Nomor Identitas di Kampus/Sekolah'],
-                        // NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
+                        universitasAtauSekolah: rows[i]['Nama Universitas/Sekolah'],
                         fotoIPKAtauRapor: rows[i]['Foto IPK/Raport Sekolah'],
                         fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
                         jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
@@ -194,13 +201,13 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
                         fotoKTP: rows[i]['Foto KTP'],
                         kotaKabupaten: rows[i]['Kota/Kabupaten'],
                         namaLengkap: rows[i]['Nama Lengkap'],
-                        // noTlp: rows[i]['Nomor Telepon (Whatsapp) Aktif'],
+                        noTlp: rows[i]['Nomor Telepon'],
                         provinsi: rows[i]['Provinsi Tempat Tinggal'],
                         sosmedAcc: rows[i]['Akun Media Sosial']
                     },
                     bioPendidikan: {
                         NIM: rows[i]['Nomor Identitas di Kampus/Sekolah'],
-                        // NPSN: rows[i]['Nomor Identitas Kampus/Sekolah'],
+                        universitasAtauSekolah: rows[i]['Nama Universitas/Sekolah'],
                         fotoIPKAtauRapor: rows[i]['Foto IPK/Raport Sekolah'],
                         fotoKTM: rows[i]['Foto Kartu Identitas Kampus/Sekolah'],
                         jurusan: rows[i]['Jurusan Kuliah/Kelas Sekolah'],
@@ -302,7 +309,6 @@ route.post('/:id/applicants/processData',auth, checkCampaign, (req,res) => {
     //checking if the process for a campaign has already done
     const main = async() => {
         await configSheet(); //waiting until connection to sheet established before continuing
-        
         campaignRef.doc(idCampaign).get().then((data) => {
             lastApplicantNumber = data.data().applicants.length;
             if(lastApplicantNumber == rows.length){
@@ -575,7 +581,7 @@ route.get('/:id/applicants', auth, checkCampaign, (req,res) => {
                                 name: userDataDetails.bioDiri.namaLengkap,
                                 provinsi: userDataDetails.bioDiri.provinsi,
                                 kota: userDataDetails.bioDiri.kotaKabupaten,
-                                university: userDataDetails.bioPendidikan.NPSN,
+                                universitasAtauSekolah: userDataDetails.bioPendidikan.universitasAtauSekolah,
                                 score: userDataDetails.scoreApplicant.total,
                                 statusApplicant: userDataDetails.statusApplicant,
                                 statusData: userDataDetails.statusData,
@@ -767,7 +773,7 @@ route.get('/:id/downloadResult', auth, checkCampaign, (req,res) => {
                               {id: 'bioDiri.provinsi', title: 'provinsi'},
                               {id: 'bioDiri.sosmedAcc', title: 'sosmedAcc'},
                               {id: 'bioPendidikan.NIM', title: 'NIM'},
-                              {id: 'bioPendidikan.NPSN', title: 'NPSN'},
+                              {id: 'bioPendidikan.universitasAtauSekolah', title: 'NPSN'},
                               {id: 'bioPendidikan.fotoIPKAtauRapor', title: 'Foto IPK / Rapor'},
                               {id: 'bioPendidikan.fotoKTM', title: 'fotoKTM'},
                               {id: 'bioPendidikan.jurusan', title: 'jurusan'},
