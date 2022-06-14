@@ -1,5 +1,15 @@
+# How to run the code
+1. Download all files
+2. Install Nodejs and NPM
+3. Get credentials from Firebase (please make your own firebase and get the credentials to connect it with the main server)
+4. Get service account credentials for gsheet API (please make your own GCP project and enable sheet API and get the SA credentials)
+5. Put all credentials in .env file with the name corresponding to naming given in fireconfig.js (Firebase SA) and first endpoint in campaign.js (gsheet SA)
+6. Do npm install in the terminal (should be done in the right directory)
+7. Open server.js and server-model.py
+8. Node server.js for server.js and python3 server-model.py for server-model.py in the terminal (should be done in the right directory)
+9. You should good to go
+
 # API usage guide
-> API still in development, change to be made
 
 ## Table of contents
 1. [Endpoint](#endpoint) 
@@ -13,12 +23,13 @@
     3. [Get specific scholarship program details](#get-specific-scholarship-program-details)
     4. [Get applicants in a specific scholarship program](#get-applicants-in-a-specific-scholarship-program)
     5. [Activating process Data for a campaign](#activating-process-data-for-a-campaign)
+    6. [Downloading all accepted applicants data](#downloading-all-accepted-applicants-data)
 5. [Applicants](#applicants)
     1. [Get specific applicants detail](#get-specific-applicants-detail)
     2. [Update specific applicant status](#update-specific-applicant-status)
 
 ## Endpoint
-https://kitabisa-test-app.herokuapp.com
+http://34.101.51.145
 
 ## Login
 - URL
@@ -95,7 +106,6 @@ if registering with registered email
 - Response
 ```
 {
-{
     "error": false,
     "message": "Data successfully fetched",
     "listCampaign": [
@@ -103,30 +113,13 @@ if registering with registered email
             "id": "2MITdua2vK5LlRpfN0jo",
             "name": "Beasiswa Narasi",
             "penggalangDana": "Narasi",
-            "photoUrl": "https://campuspedia.id/news/wp-content/uploads/2021/08/Beasiswa-Celengan-Narasi.jpg",
-            "SnK": "Beasiswa Narasi akan disalurkan hanya untuk kepentingan biaya pendidikan (UKT, SKS) atau penunjang pendidikan (skripsi, penelitian, dll)., Beasiswa Narasi hanya untuk membantu kebutuhan pendidikan mahasiswa tingkat S1 di Perguruan Tinggi Negeri (PTN) dan Perguruan Tinggi Swasta (PTS), Calon penerima beasiswa berstatus mahasiswa aktif, Nominal biaya pendidikan maupun penunjang pendidikan yang dapat diajukan oleh mahasiswa maksimal Rp 10.000.000 (sepuluh juta rupiah), Setiap kandidat yang terpilih mendapatkan beasiswa bersedia untuk diangkat profilnya di media sosial Narasi dan Kitabisa."
-        },
-        {
-            "id": "EMvR1B7Y4xVWNrYtAYpY",
-            "name": "Test",
-            "penggalangDana": "test",
-            "photoUrl": "test",
-            "SnK": "Data dummy"
-        },
-        {
-            "id": "fwZUBXt4d1vAobiNpnhq",
-            "name": "campaign lainnya",
-            "penggalangDana": "abcede",
-            "photoUrl": "asasa.png",
-            "SnK": "Data dummy"
-        },
-        {
-            "id": "guVZ1HkTajrqH7of5rEo",
-            "name": "test",
-            "penggalangDana": "test",
-            "SnK": "notes pertama"
+            "photoUrl": "https://firebasestorage.googleapis.com/v0/b/kitabisa-schlrship-filter.appspot.com/o/Beasiswa-Celengan-Narasi.jpg?alt=media&token=dc502c16-e25f-4699-a8a2-e25148681839",
+            "SnK": "Beasiswa Narasi akan disalurkan hanya untuk kepentingan biaya pendidikan (UKT, SKS) atau penunjang pendidikan (skripsi, penelitian, dll)., Beasiswa Narasi hanya untuk membantu kebutuhan pendidikan mahasiswa tingkat S1 di Perguruan Tinggi Negeri (PTN) dan Perguruan Tinggi Swasta (PTS), Calon penerima beasiswa berstatus mahasiswa aktif, Nominal biaya pendidikan maupun penunjang pendidikan yang dapat diajukan oleh mahasiswa maksimal Rp 10.000.000 (sepuluh juta rupiah), Setiap kandidat yang terpilih mendapatkan beasiswa bersedia untuk diangkat profilnya di media sosial Narasi dan Kitabisa.",
+            "addedAt": {
+                "_seconds": 1654265588,
+                "_nanoseconds": 0
+            }
         }
-    ]
 }
 ```
 
@@ -172,11 +165,13 @@ if only one of 4 parameter null or ""
     "Data": {
         "name": "Beasiswa Narasi",
         "penggalangDana": "Narasi",
-        "photoUrl": "https://campuspedia.id/news/wp-content/uploads/2021/08/Beasiswa-Celengan-Narasi.jpg",
-        "applicantsCount": 8,
-        "acceptedApplicants": 1,
-        "rejectedApplicants": 4,
-        "onHoldApplicants": 3
+        "photoUrl": "https://firebasestorage.googleapis.com/v0/b/kitabisa-schlrship-filter.appspot.com/o/Beasiswa-Celengan-Narasi.jpg?alt=media&token=dc502c16-e25f-4699-a8a2-e25148681839",
+        "processData": "1",
+        "applicantsCount": 37,
+        "acceptedApplicants": 0,
+        "rejectedApplicants": 0,
+        "onHoldApplicants": 0,
+        "pendingApplicants": 37
     }
 }
 ```
@@ -192,7 +187,7 @@ if only one of 4 parameter null or ""
   - statusRumah as valid/invalid,
   - provinsi as string,
   - pageNumber as string
-- Response (status = accepted)
+- Response (might be different depend on the query used)
 ```
 {
     "error": false,
@@ -200,32 +195,44 @@ if only one of 4 parameter null or ""
     "campaign": "Beasiswa Narasi",
     "listApplicants": [
         {
-            "id": "p0SXEBa4zwZ00RNqYPKi",
-            "photoURL": "https://i.pinimg.com/736x/8e/d6/88/8ed688dd8f994687d33e435f0d54501a.jpg",
-            "name": "Agnes valen",
-            "provinsi": "Bandung",
-            "kota": "Bandung",
-            "university": "33988",
-            "score": 440,
-            "statusApplicant": "accepted",
+            "id": "LAZdm6hB0Pd2D6IJQiqr",
+            "photoURL": "https://api.typeform.com/responses/files/fd5jfhdys69b37fec677esssd7aa1d1d234b87927c8d1b3e3efaaac693c1e1f2bf69d/1.png",
+            "name": "Ahmad",
+            "provinsi": "Sumatera Utara",
+            "kota": "Deli Serdang",
+            "universitasAtauSekolah": "Universitas negeri medan",
+            "score": 400,
+            "statusApplicant": "pending",
             "statusData": "valid",
             "statusRumah": "valid",
             "page": 1
         },
         {
-            "id": "Ycu2UbjZ3gN2Cxfndp9L",
-            "photoURL": "https://drive.google.com/open?id=1VttBNnvBvpwRAe3oFyTmqUPfC3EtGEEE",
-            "name": "Agus Putra Hendrawan",
-            "provinsi": "Bali",
-            "kota": "Denpasar",
-            "university": "190710193",
-            "score": 270,
-            "statusApplicant": "accepted",
-            "statusData": "invalid",
-            "statusRumah": "invalid",
+            "id": "bGUNE7Z8mMYxeg6VmzTj",
+            "photoURL": "https://api.typeform.com/responses/files/ce25d6c6cc9cd46sfsags8e7f581785f3b83d8s0aa16846209e24535e841cdsd37e/34234.PNG",
+            "name": "Alfian",
+            "provinsi": "Jawa Timur",
+            "kota": "Situbondo",
+            "universitasAtauSekolah": "Universitas Pembangunan Nasional",
+            "score": 400,
+            "statusApplicant": "pending",
+            "statusData": "valid",
+            "statusRumah": "valid",
+            "page": 1
+        },
+        {
+            "id": "qYMkAaivaVfZq00d6dy1",
+            "photoURL": "https://api.typeform.com/responses/files/6ae2da003452c998db03jjsuw772ys5f1d97351a9b738438399813138fbe42f1cfc6/sda.PNG",
+            "name": "Sri",
+            "provinsi": "Riau",
+            "kota": "Siak",
+            "universitasAtauSekolah": "STAI SUSHA Siak",
+            "score": 360,
+            "statusApplicant": "pending",
+            "statusData": "valid",
+            "statusRumah": "valid",
             "page": 1
         }
-    ]
 }
 ```
 
@@ -233,23 +240,48 @@ if only one of 4 parameter null or ""
 - URL
     - /campaigns/{ID_CAMPAIGN}/applicants/processData
 - Method
-    - GET
+    - POST
 - URL Parameter
     - id_campaign as string
 - Response
-If successfully trigger processData
+If successfully trigger processData for the first time
  ```
  {
     error: false,
     message: "All data has already fetched and created"
  }
  ```
- If processData has done before
+ If successfully trigger processData other than the fist time
+ (if no new applicants in sheet)
  ```
  {
-    error: true,
-    message: "The data for this campaign has already processed"
+    error: false,
+    message: "No new applicant(s)"
  }
+ ```
+ (if there's at least 1 new applicant in sheet)
+ ```
+ {
+    error: false
+    message: 'All new applicant already fetched" 
+ }
+ ```
+ 
+ ### Downloading all accepted applicants data
+ - URL
+    - /campaigns/{ID_CAMPAIGN}/downloadResult
+ - Method
+    - GET
+ - URL parameter
+    - campaign id as string
+ - Response
+ ```
+ {
+    "error": false,
+    "fileDownload": [
+        "https://storage.googleapis.com/kitabisa-schlrship-filter.appspot.com/test/ApplicantsTest_Beasiswa%20Narasi_2022514.csv?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=firebase-adminsdk-dditc%40a.iam.gserviceaccount.com%2F20220614%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=22222233444112527Z&X-Goog-Expires=1&X-Goog-SignedHeaders=host&X-Goog-Signature=89b5a74bc3bd73251923d1d3a4bd93429131f9cajjd7777djskaii2js92hf0jsd83nfg823bnf8823bf82kf923829f342ffcf8b83f1ea28dc1554bae9bd5a9fe2f3fc82820cf1d2204cfaedf8063a6ed3ac56476f34555749833cb3c44419b431a1e30f968fd05491ce31b19698c09a27711e976acbc8e855d79a9fe4352628aeafd84806a508f41d5d930e691e980d48b94b514e6544ecfdb105b7ad5894fab9be26d5fc29a1"
+    ]
+}
  ```
 
 ## Applicants
@@ -263,50 +295,63 @@ If successfully trigger processData
 - Response
 ```
 {
-   {
     "error": false,
     "message": "Data successfully fetched",
     "fetchedData": {
         "bioDiri": {
-            "nama": "Agus Putra Hendrawan",
-            "provinsi": "Bali",
-            "kotaKabupaten": "Denpasar",
-            "alamat": "Jl Rumah Agus Blok 1",
-            "NIK": "5555444455556666",
-            "fotoKTP": "https://drive.google.com/open?id=16BL03S4AV94gr6KfsGuwpLoVqoK4DQ8t",
-            "fotoDiri": "https://drive.google.com/open?id=1VttBNnvBvpwRAe3oFyTmqUPfC3EtGEEE",
-            "sosmedAcc": "@agushusky",
-            "noTlp": "Belum ada di dummy om datanya"
+            "nama": "tono test",
+            "provinsi": "DKI Jakarta",
+            "kotaKabupaten": "banten",
+            "alamat": "jl barbar bisa sini",
+            "NIK": "1234",
+            "fotoKTP": "https://api.typeform.com/responses/files/testestsetsetse/25cd9e5f7071_IMG_20210623_184143.jpg",
+            "fotoDiri": "https://api.typeform.com/responses/files/testestestset/Screenshot_2022_06_13_214203.png",
+            "sosmedAcc": "@ganteng_sekali",
+            "noTlp": "12345"
         },
         "bioPendidikan": {
             "tingkatPendidikan": "Kuliah",
-            "jurusan": "Informatika",
-            "NIM": "190710193",
-            "NPSN": "Belum ada di dummy om datanya",
-            "fotoKTM": "https://drive.google.com/open?id=1MYljcGUbV9-3N6xor5k6BI3-ER-FtWUf",
-            "fotoIPKAtauRapor": "https://drive.google.com/open?id=1cN9-QY2HyFSJHovBc9qQJuNGWJxa1gCO"
+            "jurusan": "UNJA-Ilmu Hukum-2019",
+            "NIM": "1234",
+            "universitasAtauSekolah": "UNJA-Ilmu Hukum-2019",
+            "fotoKTM": "https://api.typeform.com/responses/files/awfawh89awfha/efe37906aabc_16245050903863625666765027345210.jpg",
+            "fotoIPKAtauRapor": "https://api.typeform.com/responses/files/testeteststset/b508a428f29f_16245049661723965463954321859754.jpg"
         },
         "pengajuanBantuan": {
-            "kebutuhan": "Biaya penunjang kuliah/sekolah",
-            "totalBiaya": "5000000",
-            "fotoBuktiTunggakan": "https://drive.google.com/open?id=1-7k2GkEbkn1CNPBVrePgnurcEhaDxGrT",
-            "ceritaPenggunaanDana": "Rencana penggunaan dana dituliskan untuk menginformasikan rincian dari pencairan dana yang ingin Anda cairkan. Hal tersebut berguna pada saat pencairan dana telah disetujui, rencana penggunaan dana tersebut akan secara otomatis muncul di halaman galang dana pada menu Kabar Terbaru sebagai bentuk transparansi dana kepada publik, terutama pihak donatur.\n\nRencana penggunaan dana wajib dituliskan campaigner (penggalang dana) saat melakukan pengajuan pencairan dana, baik pada campaign dengan kategori medis (bantuan kesehatan) maupun campaign dengan kategori non-medis (bantuan lainnya). Rencana peggunaan dana yang dituliskan harus jelas dan terperinci dan harus sesuai dengan tujuan galang dana yang dibuat.",
-            "kepemilikanRumah": "Milik Sendiri",
-            "fotoRumah": "https://drive.google.com/open?id=1q-sNSfXlbf4TYxiXkUe2kaDrcb0462MW"
+            "kebutuhan": "Biaya Penunjang Kuliah/Sekolah",
+            "totalBiaya": "4000000",
+            "fotoBuktiTunggakan": "https://api.typeform.com/responses/files/df839a46f30a45cb3f4e240/test.pdf",
+            "ceritaPenggunaanDana": "ini cerita",
+            "kepemilikanRumah": "Sewa",
+            "fotoRumah": "https://api.typeform.com/responses/files/73f823b8823gf8b2d738e12/45ac7079bf69_20201009_103024.jpg"
         },
         "motivationLetter": {
-            "ceritaLatarBelakang": "Pria itu selalu saja begitu, kerjaannya begadang sampai larut dan cuma memperbaiki barang rongsok yang bukan miliknya. Mendengar suaranya saja sudah bikin tidak tenang banyak orang, entah bagaimana, yang jelas suaranya cukup nyaring di dengar dari dalam rumah.\n\n“pak sudah malam ini, cepatan masuk rumah, gak enak sama tetangga.” kata ibuku.\n\nRumahku berada di pinggir jalan gang tidak terlalu lebar. Dalam rumah kami, tidak ada tempat buat menyimpan semua barang milik ayahku, tepatnya barang milik temannya.\n\nIbuku sering marah kepada ayah karena perbuatannya yang sering sekali tidak tidur. Tak jarang juga pada pagi hari terdengar celoteh yang kurang enak untuk didengar anak-anaknya sepertiku.\n\nTapi apa boleh buat, begitulah kebiasaan ayahku.\n\nDia memperbaiki becak motor milik teman-temannya. Bukan hanya satu-dua, melainkan ada 3 sampai lima becak yang berserakan di depan rumah kami.\n\nDan kenapa aku bilang itu adalah barang rongsokan, karena beberapa hari lagi pasti becak itu akan datang kerumah kami memohon untuk diperbaiki. Aku tidak begitu mengerti dan memperhatikannya, cuman setiap hari aku lihat becak-becak itu, setidaknya aku tau mana yang sudah pernah datang dan mana yang belum.",
-            "ceritaPerjuangan": "Sering dari becak yang diperbaiki ayahku adalah becak yang sama, dan itu-itu saja. Aku pun hafal, bahkan siapa yang datang juga aku tau dia pemilik becak rongsok yang mana.\n\nKebiasaannya buruk yang sering dilakukan itu membuat tubuhnya lemah. Dia sering sekali sakit-sakitan. Batuknya yang tak henti dalam satu dua minggu, nafas yang sedikit ngos-ngosan, asma sih enggak, mungkin saking kecapeannya.\n\nUntuk menghidupi anaknya, ibuku membantu perekonomian keluarga dengan jualan gorenang setiap harinya. Ayahku sendiri hanya tukang becak motor dan petani kecil. Jadi setelah dia begadang atau hanya tidur dalam waktu 1-2 jam, lalu dia pergi ke sawah dan mengurus ladangnya.Tapi bila tidak musim tanam atau panen, maka ayahku pergi ke pankalan becak untuk mencari pelanggan.\n\nSayangnya tak ada pelanggan yang mau menaiki becak motor milik ayahku. Memang aku akui dan juga ibu pun begitu, bahwa becak motor milik ayahku tak layak ditumpangi oleh orang. Mungkin jelek dan rusaknya karena dibuat untuk membawa kelapa kering milik bosnya untuk diantarkan ke para pelanggan pemilik kelapa tersebut.",
-            "ceritaPentingnyaBeasiswa": "Iya, ayahku pengantar kelapa tua. Itu pun cuma jika setiap ada kelapa yang datang, biasa 3 hari sekali. Dari situlah ayahku benar-benar mendapat upah untuk menghidupi keluarga.\n\nLantas bagaimana dengan barang rongsok yang selalu dikerjakannya setiap malam, yang susah payah dia bela-bela tidak tidur hanya untuk memperbaiki barang-barang tersebut?\n\nKalau kalian tau, semua yang dia kerjakan untuk becak motor rongsok itu “TIDAK di BAYAR“.\n\nKetika aku mendengar kabar tersebut dari ibuku, aku juga ikut jengkel, marah, kesal apa sajalah. Kenapa coba dia rela bela-belain memperbaiki becak rongsok milik temannya yang pada ujung-ujungnya tidak mendapat apa-apa?\n\nKenapa juga sih dia merelakan kesehatanya hanya untuk orang yang tidak memikirkannya. Pernah aku menjumpai dia benar-benar sakit. Tubuhnya sangat lemas, batuknya sudah gak karuan nada dan iramanya, menyakitkan dada orang tersebut. Dia hanya bisa berbaring lemas untuk jangka waktu beberapa hari.",
-            "ceritakegiatanYangDigeluti": "Sejenak aku berfikir, mungki dia lebih baik diberi sakit dari Sang Kuasa, dengan begitu dia bisa istirahat. Mungkin juga dari sakit itu dia sadar, kalau yang dia lakukan itu tidak baik untuk kesehatannya. Toh juga apa yang ia lakukan tidak mendapat apa-apa.\n\nTapi pikiranku salah besar, apa yang telah terjadi kepadanya tidak membuatnya berubah sama sekali. Saat dia sudah sedikit bugar, cuma sedikit saja, dia melakukan aktifitas itu lagi dan lagi.\n\nSampai kapan dia akan melakukan hal itu? Aku kesal dengan berbuatanya, aku bukan benci, cuma kalau melihat salah seorang yang kusayang seperti itu, lantas aku harus bagaimana? aku juga bingung, ibu saja tidak bisa menasehatinya, apa lagi aku?\n\nDi suatu pagi yang seisi rumah ribut oleh ocehan ayah-ibuku, aku mendengar ucapan mereka yang lantang dengan suara saling meninggi,\n\n“pak bagaimana nasib anak kita, kalau bapak begini terus, penghasilan pas-pasan dan tidak cari kerja lain. Masih saja mengurus becak orang yang tidak mendapakan upah. Sedangkan anak kita sudah masuk kelas 3 SMA, habis ini butuh dana banyak untuk ujianya” kata ibuku berusa halus.",
-            "fotoBuktiKegiatan": "https://drive.google.com/open?id=1MFDmX6T-xB1DjpqePfNOUBZ1hRK8K7CR"
+            "ceritaLatarBelakang": "ini cerita",
+            "ceritaPerjuangan": "ini cerita",
+            "ceritaPentingnyaBeasiswa": "ini cerita",
+            "ceritakegiatanYangDigeluti": "Sini cerita",
+            "fotoBuktiKegiatan": "https://api.typeform.com/responses/files/52096be7ca908f6e52ad0c4e7/f01da66aa0da_PhotoGrid_Plus_1629435302510.jpg"
         },
-        "statusApplicant": "rejected",
+        "scoreApplicant": {
+            "total": 230,
+            "scoreRumah": 10,
+            "scoreProvinsi": 10,
+            "scorePerjuangan": 10,
+            "scorePenting": 10,
+            "scoreNIK": 10,
+            "scoreMedsos": 10,
+            "scoreLatarBelakang": 50,
+            "scoreKota": 10,
+            "scoreKepemilikanRumah": 10,
+            "scoreKegiatan": 50,
+            "scoreDana": 50
+        },
+        "statusApplicant": "pending",
         "statusData": "invalid",
         "statusRumah": "invalid",
-        "lampiranTambahan": "https://drive.google.com/open?id=1K_CEyInlqcswIA1BGEjt1GKURVC9OZmz",
+        "lampiranTambahan": "",
         "misc": {
-            "beasiswaTerdaftar": "2MITdua2vK5LlRpfN0jo"
+            "beasiswaTerdaftar": "Beasiswa Narasi"
         },
         "reviewer": "",
         "notes": ""
