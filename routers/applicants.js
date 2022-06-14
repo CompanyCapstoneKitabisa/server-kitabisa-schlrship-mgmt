@@ -37,7 +37,7 @@ route.get('/',auth, (req,res) => {
                         tingkatPendidikan: applicantsDataDetail.bioPendidikan.tingkatPendidikan,
                         jurusan: applicantsDataDetail.bioPendidikan.jurusan,
                         NIM: applicantsDataDetail.bioPendidikan.NIM,
-                        NPSN: applicantsDataDetail.bioPendidikan.NPSN,
+                        universitasAtauSekolah: applicantsDataDetail.bioPendidikan.universitasAtauSekolah,
                         fotoKTM: applicantsDataDetail.bioPendidikan.fotoKTM,
                         fotoIPKAtauRapor: applicantsDataDetail.bioPendidikan.fotoIPKAtauRapor
                     },
