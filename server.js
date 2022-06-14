@@ -9,8 +9,7 @@ const campaignRoute = require('./routers/campaign.js');
 const applicantRoute = require('./routers/applicants.js');
 
 const app = express();
-// app.use(timeout('10s'))
-// app.use(haltOnTimedout);
+
 require('dotenv').config();
 const port = process.env.PORT || 8080;
 
@@ -21,10 +20,6 @@ app.use('/users', userRoute);
 app.use('/login', loginRoute);
 app.use('/campaigns', campaignRoute);
 app.use('/applicants', applicantRoute);
-
-// function haltOnTimedout(req, res, next){
-//     if (!req.timedout) next();
-//   }
 
 const server = app.listen(port, () => {
     console.log(`Listening to port ${port}`);
