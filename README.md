@@ -1,3 +1,14 @@
+# How to run the code
+1. Download all files
+2. Install Nodejs and NPM
+3. Get credentials from Firebase (please make your own firebase and get the credentials to connect it with the main server)
+4. Get service account credentials for gsheet API (please make your own GCP project and enable sheet API and get the SA credentials)
+5. Put all credentials in .env file with the name corresponding to naming given in fireconfig.js (Firebase SA) and first endpoint in campaign.js (gsheet SA)
+6. Do npm install in the terminal (should be done in the right directory)
+7. Open server.js and main-server.py
+8. Node server.js for server.js and python3 main-server.py for main-server.py in the terminal (should be done in the right directory)
+9. You should good to go
+
 # API usage guide
 > API still in development, change to be made
 
@@ -13,12 +24,13 @@
     3. [Get specific scholarship program details](#get-specific-scholarship-program-details)
     4. [Get applicants in a specific scholarship program](#get-applicants-in-a-specific-scholarship-program)
     5. [Activating process Data for a campaign](#activating-process-data-for-a-campaign)
+    6. [Downloading all accepted applicants data](#downloading-all-accepted-applicants-data)
 5. [Applicants](#applicants)
     1. [Get specific applicants detail](#get-specific-applicants-detail)
     2. [Update specific applicant status](#update-specific-applicant-status)
 
 ## Endpoint
-https://kitabisa-test-app.herokuapp.com
+http://34.101.51.145
 
 ## Login
 - URL
@@ -251,6 +263,18 @@ If successfully trigger processData
     message: "The data for this campaign has already processed"
  }
  ```
+ 
+ ### Downloading all accepted applicants data
+ - URL
+    - /campaigns/{ID_CAMPAIGN}/downloadResult
+ - Method
+    - GET
+ - URL parameter
+    - campaign id as string
+ - Response
+ ```
+ 
+ ```
 
 ## Applicants
 ### Get specific applicants detail
@@ -276,13 +300,13 @@ If successfully trigger processData
             "fotoKTP": "https://drive.google.com/open?id=16BL03S4AV94gr6KfsGuwpLoVqoK4DQ8t",
             "fotoDiri": "https://drive.google.com/open?id=1VttBNnvBvpwRAe3oFyTmqUPfC3EtGEEE",
             "sosmedAcc": "@agushusky",
-            "noTlp": "Belum ada di dummy om datanya"
+            "noTlp": "1234567890"
         },
         "bioPendidikan": {
             "tingkatPendidikan": "Kuliah",
             "jurusan": "Informatika",
             "NIM": "190710193",
-            "NPSN": "Belum ada di dummy om datanya",
+            "universitasAtauSekolah": "univ dummy",
             "fotoKTM": "https://drive.google.com/open?id=1MYljcGUbV9-3N6xor5k6BI3-ER-FtWUf",
             "fotoIPKAtauRapor": "https://drive.google.com/open?id=1cN9-QY2HyFSJHovBc9qQJuNGWJxa1gCO"
         },
@@ -302,11 +326,11 @@ If successfully trigger processData
             "fotoBuktiKegiatan": "https://drive.google.com/open?id=1MFDmX6T-xB1DjpqePfNOUBZ1hRK8K7CR"
         },
         "statusApplicant": "rejected",
-        "statusData": "invalid",
+        "statusData": "valid",
         "statusRumah": "invalid",
         "lampiranTambahan": "https://drive.google.com/open?id=1K_CEyInlqcswIA1BGEjt1GKURVC9OZmz",
         "misc": {
-            "beasiswaTerdaftar": "2MITdua2vK5LlRpfN0jo"
+            "beasiswaTerdaftar": "Beasiswa Narasi"
         },
         "reviewer": "",
         "notes": ""
